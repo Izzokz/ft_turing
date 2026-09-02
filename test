@@ -1,0 +1,42 @@
+********************************************************************************
+* *
+* name *
+* *
+********************************************************************************
+Alphabet: [ 1, ., -, = ]
+States : [ scanright, eraseone, subone, skip, HALT ]
+Initial : scanright
+Finals : [ HALT ]
+(scanright, .) -> (scanright, ., RIGHT)
+(scanright, 1) -> (scanright, 1, RIGHT)
+(scanright, -) -> (scanright, -, RIGHT)
+(scanright, =) -> (eraseone, ., LEFT)
+(eraseone, 1) -> (subone, =, LEFT)
+(eraseone, -) -> (HALT, ., LEFT)
+(subone, 1) -> (subone, 1, LEFT)
+(subone, -) -> (skip, -, LEFT)
+(skip, .) -> (skip, ., LEFT)
+(skip, 1) -> (scanright, ., RIGHT)
+********************************************************************************
+[<1>11-11=.............] (scanright, 1) -> (scanright, 1, RIGHT)
+[1<1>1-11=.............] (scanright, 1) -> (scanright, 1, RIGHT)
+[11<1>-11=.............] (scanright, 1) -> (scanright, 1, RIGHT)
+[111<->11=.............] (scanright, -) -> (scanright, -, RIGHT)
+[111-<1>1=.............] (scanright, 1) -> (scanright, 1, RIGHT)
+[111-1<1>=.............] (scanright, 1) -> (scanright, 1, RIGHT)
+[111-11<=>.............] (scanright, =) -> (eraseone, ., LEFT)
+[111-1<1>..............] (eraseone, 1) -> (subone, =, LEFT)
+[111-<1>=..............] (subone, 1) -> (subone, 1, LEFT)
+[111<->1=..............] (subone, -) -> (skip, -, LEFT)
+[11<1>-1=..............] (skip, 1) -> (scanright, ., RIGHT)
+[11.<->1=..............] (scanright, -) -> (scanright, -, RIGHT)
+[11.-<1>=..............] (scanright, 1) -> (scanright, 1, RIGHT)
+[11.-1<=>..............] (scanright, =) -> (eraseone, ., LEFT)
+[11.-<1>...............] (eraseone, 1) -> (subone, =, LEFT)
+[11.<->=...............] (subone, -) -> (skip, -, LEFT)
+[11<.>-=...............] (skip, .) -> (skip, ., LEFT)
+[1<1>.-=...............] (skip, 1) -> (scanright, ., RIGHT)
+[1.<.>-=...............] (scanright, .) -> (scanright, ., RIGHT)
+[1..<->=...............] (scanright, -) -> (scanright, -, RIGHT)
+[1..-<=>...............] (scanright, =) -> (eraseone, ., LEFT)
+[1..<->................] (eraseone, -) -> (HALT, ., LEFT)
