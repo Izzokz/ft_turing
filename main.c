@@ -4,6 +4,7 @@
 #include <stdio.h> //printf
 #include <string.h> //strcat,strcpy
 #include "include/cjson/cJSON.h"
+#include "include/t_conf.h"
 
 int	g_I = 0;
 int	g_max_I = -1;
@@ -84,6 +85,59 @@ static char	*ft_read_file(char *filename)
 	return (file);
 }
 
+static void	ft_conf(t_conf *conf, cJSON *json)
+{
+	cJSON	*obj = cJSON_GetObjectItem(json, "name");
+	if (!cJSON_IsString(obj) || !(*obj).valuestring)
+		ft_print_err();
+	(*conf).name = strdup((*obj).valuestring);
+	if (!(*conf).name)
+		ft_print_err();
+
+	obj = cJSON_GetObjectItem(json, "alphabet");
+
+	obj = cJSON_GetObjectItem(json, "blank");
+	if (!cJSON_IsString(obj) || !(*obj).valuestring || (strlen((*obj).valuestring) != 1))
+		ft_print_err();
+	(*conf).blank = *((*obj).valuestring);
+
+	obj = cJSON_GetObjectItem(json, "states");
+
+	obj = cJSON_GetObjectItem(json, "initial");
+	if (!cJSON_IsString(obj) || !(*obj).valuestring)
+		ft_print_err();
+	(*conf).initial = strdup((*obj).valuestring);
+	if (!(*conf).initial)
+		ft_print_err();
+
+	obj = cJSON_GetObjectItem(json, "finals");
+}
+
+static void	ft_free_conf(t_conf *conf)
+{
+	free((*conf).name);
+	free((*conf).alphabet);
+	if ((*conf).states)
+	{
+		while (*((*conf).states))
+		{
+			free(*((*conf).states));
+			++(*conf).states;
+		}
+		free((*conf).states);
+	}
+	free((*conf).initial);
+	if ((*conf).finals)
+	{
+		while (*((*conf).finals))
+		{
+			free(*((*conf).finals));
+			++(*conf).finals;
+		}
+		free((*conf).finals);
+	}
+}
+
 int	main(int ac, char *av[])
 {
 	if (ac == 1)
@@ -101,7 +155,13 @@ int	main(int ac, char *av[])
 		ft_print_err();
 	cJSON	*json = cJSON_Parse(file_read);
 	free(file_read);
+	if (!json)
+		ft_print_err();
+
+	t_conf	conf = {0, 0, 0, 0, 0, 0};
+	ft_conf(&conf, json);
 	cJSON_Delete(json);
+	ft_free_conf(&conf);
 }
 
 // name  str
