@@ -6,8 +6,10 @@
 #include "include/cjson/cJSON.h"
 #include "include/t_conf.h"
 
-int	g_I = 0;
-int	g_max_I = -1;
+int		g_I = 0;
+int		g_max_I = -1;
+t_conf	g_conf = {0, 0, 0, 0, 0, 0};
+cJSON	*g_json = 0;
 
 static char	ft_sequals(char *s1, char *s2)
 {
@@ -42,8 +44,38 @@ void	ft_print_help(void)
 	exit(0);
 }
 
+static void	ft_free_conf(void)
+{
+	void	*cp;
+	free(g_conf.name);
+	free(g_conf.alphabet);
+	if (g_conf.states)
+	{
+		cp = g_conf.states;
+		while (*(g_conf.states))
+		{
+			free(*(g_conf.states));
+			++(g_conf.states);
+		}
+		free(cp);
+	}
+	free(g_conf.initial);
+	if (g_conf.finals)
+	{
+		cp = g_conf.finals;
+		while (*(g_conf.finals))
+		{
+			free(*(g_conf.finals));
+			++(g_conf.finals);
+		}
+		free(cp);
+	}
+}
+
 void	ft_print_err(void)
 {
+	ft_free_conf();
+	cJSON_Delete(g_json);
 	write(2, "ERR\n", 4);
 	exit(1);
 }
@@ -85,56 +117,95 @@ static char	*ft_read_file(char *filename)
 	return (file);
 }
 
-static void	ft_conf(t_conf *conf, cJSON *json)
+static void	ft_conf(void)
 {
-	cJSON	*obj = cJSON_GetObjectItem(json, "name");
+	cJSON	*obj = cJSON_GetObjectItem(g_json, "name");
 	if (!cJSON_IsString(obj) || !(*obj).valuestring)
 		ft_print_err();
-	(*conf).name = strdup((*obj).valuestring);
-	if (!(*conf).name)
+	g_conf.name = strdup((*obj).valuestring);
+	if (!g_conf.name)
 		ft_print_err();
 
-	obj = cJSON_GetObjectItem(json, "alphabet");
+	obj = cJSON_GetObjectItem(g_json, "alphabet");
+	int		arsize;
+	if (!cJSON_IsArray(obj) || (arsize = cJSON_GetArraySize(obj)) < 1 || !(g_conf.alphabet = malloc(arsize + 1)))
+		ft_print_err();
+	int		i = -1;
+	char	c;
+	obj = (*obj).child;
+	while (obj)
+	{
+		if (strlen((*obj).valuestring) != 1)
+			ft_print_err();
+		*(g_conf.alphabet + ++i) = c = *((*obj).valuestring);
+		for (int x = 0; x < i; ++x)
+			if (c == *(g_conf.alphabet + x))
+				ft_print_err();
+		obj = (*obj).next;
+	}
+	*(g_conf.alphabet + arsize) = 0;
 
-	obj = cJSON_GetObjectItem(json, "blank");
+	obj = cJSON_GetObjectItem(g_json, "blank");
 	if (!cJSON_IsString(obj) || !(*obj).valuestring || (strlen((*obj).valuestring) != 1))
 		ft_print_err();
-	(*conf).blank = *((*obj).valuestring);
+	g_conf.blank = c = *((*obj).valuestring);
+	for (int x = 0; *(g_conf.alphabet + x); ++x)
+	{
+		if (c == *(g_conf.alphabet + x))
+		{
+			c = 0;
+			break ;
+		}
+	}
+	if (c)
+		ft_print_err();
 
-	obj = cJSON_GetObjectItem(json, "states");
+	obj = cJSON_GetObjectItem(g_json, "states");
+	if (!cJSON_IsArray(obj) || (arsize = cJSON_GetArraySize(obj)) < 2 || !(g_conf.states = calloc((arsize + 1), sizeof(void *))))
+		ft_print_err();
+	i = -1;
+	char	*str;
+	obj = (*obj).child;
+	while (obj)
+	{
+		if (!(*(g_conf.states + ++i) = str = strdup((*obj).valuestring)))
+			ft_print_err();
+		for (int x = 0; x < i; ++x)
+			if (ft_sequals(str, *(g_conf.states + x)))
+				ft_print_err();
+		obj = (*obj).next;
+	}
 
-	obj = cJSON_GetObjectItem(json, "initial");
+	obj = cJSON_GetObjectItem(g_json, "initial");
 	if (!cJSON_IsString(obj) || !(*obj).valuestring)
 		ft_print_err();
-	(*conf).initial = strdup((*obj).valuestring);
-	if (!(*conf).initial)
+	g_conf.initial = strdup((*obj).valuestring);
+	if (!g_conf.initial)
 		ft_print_err();
 
-	obj = cJSON_GetObjectItem(json, "finals");
-}
-
-static void	ft_free_conf(t_conf *conf)
-{
-	free((*conf).name);
-	free((*conf).alphabet);
-	if ((*conf).states)
+	obj = cJSON_GetObjectItem(g_json, "finals");
+	if (!cJSON_IsArray(obj) || (arsize = cJSON_GetArraySize(obj)) < 1 || !(g_conf.finals = calloc((arsize + 1), sizeof(void *))))
+		ft_print_err();
+	i = -1;
+	obj = (*obj).child;
+	while (obj)
 	{
-		while (*((*conf).states))
+		if (!(*(g_conf.finals + ++i) = str = strdup((*obj).valuestring)))
+			ft_print_err();
+		for (int x = 0; x < i; ++x)
+			if (ft_sequals(str, *(g_conf.finals + x)))
+				ft_print_err();
+		for (int x = 0; *(g_conf.states + x); ++x)
 		{
-			free(*((*conf).states));
-			++(*conf).states;
+			if (ft_sequals(str, *(g_conf.states + x)))
+			{
+				str = 0;
+				break ;
+			}
 		}
-		free((*conf).states);
-	}
-	free((*conf).initial);
-	if ((*conf).finals)
-	{
-		while (*((*conf).finals))
-		{
-			free(*((*conf).finals));
-			++(*conf).finals;
-		}
-		free((*conf).finals);
+		if (str)
+			ft_print_err();
+		obj = (*obj).next;
 	}
 }
 
@@ -153,15 +224,14 @@ int	main(int ac, char *av[])
 	char	*file_read = ft_read_file(*++av);
 	if (!file_read)
 		ft_print_err();
-	cJSON	*json = cJSON_Parse(file_read);
+	g_json = cJSON_Parse(file_read);
 	free(file_read);
-	if (!json)
+	if (!g_json)
 		ft_print_err();
 
-	t_conf	conf = {0, 0, 0, 0, 0, 0};
-	ft_conf(&conf, json);
-	cJSON_Delete(json);
-	ft_free_conf(&conf);
+	ft_conf();
+	cJSON_Delete(g_json);
+	ft_free_conf();
 }
 
 // name  str
