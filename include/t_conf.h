@@ -7,8 +7,8 @@ typedef struct	s_conf
 	char	*alphabet;
 	char	blank;
 	char	**states;
-	char	*initial;
-	char	**finals;
+	int		*finals;
+	int		fsize;
 }	t_conf;
 
 #endif
