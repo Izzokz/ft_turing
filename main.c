@@ -248,7 +248,49 @@ static void	ft_set_transitions(void)
 		if (!cJSON_IsArray(item) || (arsize = cJSON_GetArraySize(item)) < 1 || !(*(g_transet + i) = calloc(arsize + 1, sizeof(int [4]))))
 			ft_print_err();
 		item = (*item).child;
-		// TODO : Loop for Transinstructions. `{"read":<c>, "to_state":<i>, "write":<c>, "action":'L'/'R'}`
+		cJSON	*cat;
+		char	*str;
+		for (int x = 0; item; ++x)
+		{
+			if (!(*((void **)*(g_transet + i) + x) = malloc(sizeof(int [4]))))
+				ft_print_err();
+			cat = cJSON_GetObjectItem(item, "read");
+			if (!cat || !cJSON_IsString(cat) || strlen((*cat).valuestring) != 1)
+				ft_print_err();
+			**((int **)*(g_transet + i) + x) = *(*cat).valuestring;
+
+			cat = cJSON_GetObjectItem(item, "to_state");
+			if (!cat || !cJSON_IsString(cat))
+				ft_print_err();
+			str = (*cat).valuestring;
+			for (int y = 0; *(g_conf.states + y); ++y)
+			{
+				if (ft_sequals(*(g_conf.states + y), str))
+				{
+					str = 0;
+					*(*((int **)*(g_transet + i) + x) + 1) = y;
+					break ;
+				}
+			}
+			if (str)
+				ft_print_err();
+
+			cat = cJSON_GetObjectItem(item, "write");
+			if (!cat || !cJSON_IsString(cat) || strlen((*cat).valuestring) != 1)
+				ft_print_err();
+			*(*((int **)*(g_transet + i) + x) + 2) = *(*cat).valuestring;
+
+			cat = cJSON_GetObjectItem(item, "action");
+			if (!cat || !cJSON_IsString(cat))
+				ft_print_err();
+			if (ft_sequals("LEFT", (*cat).valuestring))
+				*(*((int **)*(g_transet + i) + x) + 3) = 'L';
+			else if (ft_sequals("RIGHT", (*cat).valuestring))
+				*(*((int **)*(g_transet + i) + x) + 3) = 'R';
+			else
+				ft_print_err();
+			item = (*item).next;
+		}
 	}
 }
 
