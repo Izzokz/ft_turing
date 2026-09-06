@@ -6,9 +6,8 @@
 #include "include/cjson/cJSON.h"
 #include "include/t_conf.h"
 
-int		g_I;
 int		g_max_I = -1;
-t_conf	g_conf = {0, 0, 0, 0, 0, 0};
+t_conf	g_conf = {0, 0, 0, 0, 0, 0, 0};
 cJSON	*g_json = 0;
 void	**g_transet = 0;
 
@@ -179,7 +178,7 @@ static void	ft_conf(void)
 		if (ft_sequals(str, *(g_conf.states + x)))
 		{
 			str = 0;
-			g_I = x;
+			g_conf.initial = x;
 			break ;
 		}
 	}
@@ -219,7 +218,7 @@ static void	ft_set_transitions(void)
 
 	while (*(snames + ++g_max_I))
 		;
-	if (!g_max_I || g_I > g_max_I)
+	if (!g_max_I || g_conf.initial > g_max_I)
 		ft_print_err();
 
 	g_transet = calloc(sizeof(void *), g_max_I);
@@ -294,6 +293,60 @@ static void	ft_set_transitions(void)
 	}
 }
 
+static void	ft_print_machine_description(void)
+{
+	printf("####\n## %s\n####\n# Alphabet: [", g_conf.name);
+	for (int i = 0; *(g_conf.alphabet + i); ++i)
+	{
+		printf("%c", *(g_conf.alphabet + i));
+		if (*(g_conf.alphabet + i + 1))
+			printf(", ");
+	}
+
+	printf("]\n# States: [");
+	for (int i = 0; *(g_conf.states + i); ++i)
+	{
+		printf("%s", *(g_conf.states + i));
+		if (*(g_conf.states + i + 1))
+			printf(", ");
+	}
+
+	printf("]\n# Initial: %s\n# Finals: [", *(g_conf.states + g_conf.initial));
+	for (int i = 0; i < g_conf.fsize; ++i)
+	{
+		printf("%s", *(g_conf.states + *(g_conf.finals + i)));
+		if (i + 1 < g_conf.fsize)
+			printf(", ");
+	}
+
+	printf("]\n# Transitions:\n");
+	for (int i = 0; i < g_max_I; ++i)
+	{
+		if (!*(g_transet + i))
+			continue ;
+		for (int j = 0; *((int **)*(g_transet + i) + j); ++j)
+			printf("%s[%c] => %s; writes %c; goes %c\n", *(g_conf.states + i), **((int **)*(g_transet + i) + j), *(g_conf.states + *(*((int **)*(g_transet + i) + j) + 1)), *(*((int **)*(g_transet + i) + j) + 2), *(*((int **)*(g_transet + i) + j) + 3));
+	}
+	printf("\n");
+}
+
+static char	ft_invalid_input(char *input)
+{
+	for (int i = 0; *(input + i); ++i)
+	{
+		if (*(input + i) == g_conf.blank)
+			return (1);
+		for (int j = 0; "UNICORN"; ++j)
+		{
+			if (!*(g_conf.alphabet + j))
+				return (1);
+			if (*(g_conf.alphabet + j) == *(input + i))
+				break ;
+		}
+	}
+	return (0);
+}
+
 int	main(int ac, char *av[])
 {
 	if (ac == 1)
@@ -317,6 +370,16 @@ int	main(int ac, char *av[])
 	ft_conf();
 	ft_set_transitions();
 	cJSON_Delete(g_json);
+	g_json = 0;
+
+	ft_print_machine_description();
+	while (*++av)
+	{
+		if (ft_invalid_input(*av))
+			ft_print_err();
+		
+	}
+
 	ft_free_conf();
 	ft_free_transet();
 }
