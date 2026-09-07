@@ -70,7 +70,7 @@ static void	ft_print_err(void)
 	ft_free_transet();
 	ft_free_conf();
 	cJSON_Delete(g_json);
-	write(2, "ERR\n", 4);
+	printf("ERR\n");
 	exit(1);
 }
 
@@ -347,6 +347,81 @@ static char	ft_invalid_input(char *input)
 	return (0);
 }
 
+void	ft_tm_compute(char *input)
+{
+	char	*tape = strdup(input);
+	if (!tape)
+		ft_print_err();
+
+	printf("\"%s\"\n", tape);
+	int		i = 0;
+	int		state = g_conf.initial;
+	int		c;
+	int		write;
+	int		next_state;
+	int		move;
+	while ("UNICORN")
+	{
+		if (!*(tape + i))
+		{
+			if (!(input = malloc(i + 2)))
+				ft_print_err();
+			strcpy(input, tape);
+			*(input + i) = g_conf.blank;
+			*(input + i + 1) = 0;
+			tape = input;
+		}
+
+		printf("<");
+		for (int x = 0; *(tape + x); ++x)
+		{
+			if (x == i)
+				printf("\033[41m%c\033[0m", *(tape + x));
+			else
+				printf("%c", *(tape + x));
+		}
+
+		if (!*(g_transet + state))
+		{
+			printf("> - %s", *(g_conf.states + state));
+			break ;
+		}
+
+		c = *(tape + i);
+		for (int x = 0; *((int **)*(g_transet + state) + x); ++x)
+		{
+			if (c == **((int **)*(g_transet + state) + x))
+			{
+				c = x;
+				break ;
+			}
+			else if (!*((int **)*(g_transet + state) + x + 1))
+				c = -1;
+		}
+		if (c < 0)
+		{
+			printf("> - UNKOWN TRANSITION");
+			break ;
+		}
+
+		write = *(*((int **)*(g_transet + state) + c) + 2);
+		next_state = *(*((int **)*(g_transet + state) + c) + 1);
+		move = *(*((int **)*(g_transet + state) + c) + 3);
+		printf("> - %s[%c] => %s; writes %c; goes %c\n", *(g_conf.states + state), **((int **)*(g_transet + state) + c), *(g_conf.states + next_state), write, move);
+
+		*(tape + i) = write;
+		i += (move == 'R') ? 1 : -1;
+		if (i < 0)
+		{
+			printf("TAPE LOST");
+			break ;
+		}
+		state = next_state;
+	}
+	free(tape);
+	printf("\n\n");
+}
+
 int	main(int ac, char *av[])
 {
 	if (ac == 1)
@@ -376,8 +451,9 @@ int	main(int ac, char *av[])
 	while (*++av)
 	{
 		if (ft_invalid_input(*av))
-			ft_print_err();
-		
+			printf("\"%s\" is Invalid.\n\n", *av);
+		else
+			ft_tm_compute(*av);
 	}
 
 	ft_free_conf();
