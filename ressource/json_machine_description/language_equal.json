@@ -1,0 +1,42 @@
+{
+    "name" : "language_equal",
+    "alphabet": [ "0", "1", ".", "x" ],
+    "blank" : ".",
+    "states" : [ "answer_y", "answer_n", "replacezero", "replaceone", "scanone", "begin", "HALT" ],
+    "initial" : "replacezero",
+    "finals" : [ "HALT" ],
+    "transitions" : {
+        "answer_y": [
+            { "read" : "1", "to_state": "answer_y", "write": "1", "action": "RIGHT"},
+            { "read" : "0", "to_state": "answer_y", "write": "0", "action": "RIGHT"},
+            { "read" : "x", "to_state": "answer_y", "write": "x", "action": "RIGHT"},
+            { "read" : ".", "to_state": "HALT", "write": "y", "action": "LEFT"}
+        ],
+        "answer_n": [
+            { "read" : "1", "to_state": "answer_n", "write": "1", "action": "RIGHT"},
+            { "read" : "0", "to_state": "answer_n", "write": "0", "action": "RIGHT"},
+            { "read" : "x", "to_state": "answer_n", "write": "x", "action": "RIGHT"},
+            { "read" : ".", "to_state": "HALT", "write": "n", "action": "LEFT"}
+        ],
+        "replacezero": [
+            { "read" : "0", "to_state": "scanone", "write": "x", "action": "RIGHT"},
+            { "read" : "1", "to_state": "answer_n", "write": "1", "action": "RIGHT"},
+            { "read" : "x", "to_state": "answer_y", "write": "x", "action": "RIGHT"}
+        ],
+        "replaceone": [
+            { "read" : "1", "to_state": "begin", "write": "x", "action": "LEFT"},
+            { "read" : "x", "to_state": "answer_n", "write": "x", "action": "RIGHT"}
+        ],
+        "scanone": [
+            { "read" : "0", "to_state": "scanone", "write": "0", "action": "RIGHT"},
+            { "read" : "1", "to_state": "scanone", "write": "1", "action": "RIGHT"},
+            { "read" : "x", "to_state": "replaceone", "write": "x", "action": "LEFT"},
+            { "read" : ".", "to_state": "replaceone", "write": ".", "action": "LEFT"}
+        ],
+        "begin": [
+            { "read" : "1", "to_state": "begin", "write": "1", "action": "LEFT"},
+            { "read" : "0", "to_state": "begin", "write": "0", "action": "LEFT"},
+            { "read" : "x", "to_state": "replacezero", "write": "x", "action": "RIGHT"}
+        ]
+    }
+}
