@@ -5,8 +5,9 @@
 #include <string.h> //strcat,strcpy
 #include "include/cjson/cJSON.h"
 #include "include/t_conf.h"
+#include "include/err_msg.h"
 
-int		g_max_I = -1;
+int		g_max_I;
 t_conf	g_conf = {0, 0, 0, 0, 0, 0, 0};
 cJSON	*g_json = 0;
 void	**g_transet = 0;
@@ -65,12 +66,15 @@ static void	ft_free_transet(void)
 	}
 }
 
-static void	ft_print_err(void)
+static void	ft_print_err(char *err, char *i)
 {
+	if (!i)
+		printf("ERR[%s]\n", err);
+	else
+		printf("ERR[%s](%s)\n", err, i);
 	ft_free_transet();
 	ft_free_conf();
 	cJSON_Delete(g_json);
-	printf("ERR\n");
 	exit(1);
 }
 
@@ -81,7 +85,7 @@ static char	*ft_read_file(char *filename)
 		return (0);
 	char	*file = malloc(1);
 	if (!file)
-		ft_print_err();
+		ft_print_err(ALLOC_ERR, 0);
 	*file = 0;
 	char	*cpfile;
 	int		file_size = 0;
@@ -93,13 +97,13 @@ static char	*ft_read_file(char *filename)
 		if (ret < 0)
 		{
 			free(file);
-			ft_print_err();
+			ft_print_err(READ_ERR, 0);
 		}
 		cpfile = file;
 		if (!(file = malloc((file_size += ret) + 1)))
 		{
 			free(cpfile);
-			ft_print_err();
+			ft_print_err(ALLOC_ERR, 0);
 		}
 		strcpy(file, cpfile);
 		free(cpfile);
@@ -115,33 +119,35 @@ static void	ft_conf(void)
 {
 	cJSON	*obj = cJSON_GetObjectItem(g_json, "name");
 	if (!cJSON_IsString(obj) || !(*obj).valuestring)
-		ft_print_err();
+		ft_print_err(JSON_INVALID_NAME_ERR, (*obj).valuestring);
 	g_conf.name = strdup((*obj).valuestring);
 	if (!g_conf.name)
-		ft_print_err();
+		ft_print_err(ALLOC_ERR, 0);
 
 	obj = cJSON_GetObjectItem(g_json, "alphabet");
 	int		arsize;
-	if (!cJSON_IsArray(obj) || (arsize = cJSON_GetArraySize(obj)) < 1 || !(g_conf.alphabet = malloc(arsize + 1)))
-		ft_print_err();
+	if (!cJSON_IsArray(obj) || (arsize = cJSON_GetArraySize(obj)) < 1)
+		ft_print_err(JSON_INVALID_ALPHABET_ERR, 0);
+	if (!(g_conf.alphabet = malloc(arsize + 1)))
+		ft_print_err(ALLOC_ERR, 0);
 	int		i = -1;
 	char	c;
 	obj = (*obj).child;
 	while (obj)
 	{
 		if (!cJSON_IsString(obj) || strlen((*obj).valuestring) != 1)
-			ft_print_err();
+			ft_print_err(JSON_INVALID_CHARACTER_ALPHABET_ERR, (*obj).valuestring);
 		*(g_conf.alphabet + ++i) = c = *((*obj).valuestring);
 		for (int x = 0; x < i; ++x)
 			if (c == *(g_conf.alphabet + x))
-				ft_print_err();
+				ft_print_err(JSON_DUP_CHARACTER_ALPHABET_ERR, (*obj).valuestring);
 		obj = (*obj).next;
 	}
 	*(g_conf.alphabet + arsize) = 0;
 
 	obj = cJSON_GetObjectItem(g_json, "blank");
 	if (!cJSON_IsString(obj) || !(*obj).valuestring || (strlen((*obj).valuestring) != 1))
-		ft_print_err();
+		ft_print_err(JSON_INVALID_BLANK_ERR, (*obj).valuestring);
 	g_conf.blank = c = *((*obj).valuestring);
 	for (int x = 0; *(g_conf.alphabet + x); ++x)
 	{
@@ -152,27 +158,31 @@ static void	ft_conf(void)
 		}
 	}
 	if (c)
-		ft_print_err();
+		ft_print_err(JSON_BLANK_NOT_IN_ALPHABET_ERR, (*obj).valuestring);
 
 	obj = cJSON_GetObjectItem(g_json, "states");
-	if (!cJSON_IsArray(obj) || (arsize = cJSON_GetArraySize(obj)) < 2 || !(g_conf.states = calloc((arsize + 1), sizeof(void *))))
-		ft_print_err();
+	if (!cJSON_IsArray(obj) || (g_max_I = cJSON_GetArraySize(obj)) < 1)
+		ft_print_err(JSON_INVALID_STATE_LIST_ERR, 0);
+	if (!(g_conf.states = calloc((g_max_I + 1), sizeof(void *))))
+		ft_print_err(ALLOC_ERR, 0);
 	i = -1;
 	char	*str;
 	obj = (*obj).child;
 	while (obj)
 	{
-		if (!cJSON_IsString(obj) || !(*(g_conf.states + ++i) = str = strdup((*obj).valuestring)))
-			ft_print_err();
+		if (!cJSON_IsString(obj))
+			ft_print_err(JSON_INVALID_STATE_ERR, 0);
+		if (!(*(g_conf.states + ++i) = str = strdup((*obj).valuestring)))
+			ft_print_err(ALLOC_ERR, 0);
 		for (int x = 0; x < i; ++x)
 			if (ft_sequals(str, *(g_conf.states + x)))
-				ft_print_err();
+				ft_print_err(JSON_DUP_STATE_ERR, (*obj).valuestring);
 		obj = (*obj).next;
 	}
 
 	obj = cJSON_GetObjectItem(g_json, "initial");
 	if (!cJSON_IsString(obj) || !(str = (*obj).valuestring))
-		ft_print_err();
+		ft_print_err(JSON_INVALID_INITIAL_ERR, (*obj).valuestring);
 	for (int x = 0; *(g_conf.states + x); ++x)
 	{
 		if (ft_sequals(str, *(g_conf.states + x)))
@@ -183,17 +193,19 @@ static void	ft_conf(void)
 		}
 	}
 	if (str)
-		ft_print_err();
+		ft_print_err(JSON_INITIAL_NOT_IN_STATE_LIST_ERR, str);
 
 	obj = cJSON_GetObjectItem(g_json, "finals");
-	if (!cJSON_IsArray(obj) || (g_conf.fsize = cJSON_GetArraySize(obj)) < 1 || !(g_conf.finals = malloc(g_conf.fsize * sizeof(int))))
-		ft_print_err();
+	if (!cJSON_IsArray(obj) || (g_conf.fsize = cJSON_GetArraySize(obj)) < 1)
+		ft_print_err(JSON_INVALID_FINAL_LIST_ERR, 0);
+	if (!(g_conf.finals = malloc(g_conf.fsize * sizeof(int))))
+		ft_print_err(ALLOC_ERR, 0);
 	i = -1;
 	obj = (*obj).child;
 	while (obj)
 	{
 		if (!cJSON_IsString(obj) || !(str = (*obj).valuestring))
-			ft_print_err();
+			ft_print_err(JSON_INVALID_FINAL_ERR, (*obj).valuestring);
 		for (int x = 0; *(g_conf.states + x); ++x)
 		{
 			if (ft_sequals(str, *(g_conf.states + x)))
@@ -204,10 +216,10 @@ static void	ft_conf(void)
 			}
 		}
 		if (str)
-			ft_print_err();
+			ft_print_err(JSON_FINAL_NOT_IN_STATE_LIST_ERR, str);
 		for (int x = 0; x < i; ++x)
 			if (*(g_conf.finals + i) == *(g_conf.finals + x))
-				ft_print_err();
+				ft_print_err(JSON_DUP_FINAL_ERR, (*obj).valuestring);
 		obj = (*obj).next;
 	}
 }
@@ -216,20 +228,15 @@ static void	ft_set_transitions(void)
 {
 	char		**snames = g_conf.states;
 
-	while (*(snames + ++g_max_I))
-		;
-	if (!g_max_I || g_conf.initial > g_max_I)
-		ft_print_err();
-
 	g_transet = calloc(sizeof(void *), g_max_I);
 	if (!g_transet)
-		ft_print_err();
+		ft_print_err(ALLOC_ERR, 0);
 	cJSON		*trans = cJSON_GetObjectItem(g_json, "transitions");
 	cJSON		*item;
 	if (!cJSON_IsObject(trans))
-		ft_print_err();
+		ft_print_err(JSON_INVALID_TRANS_LIST_ERR, 0);
 	int			arsize;
-	for (int i = 0; *(g_conf.states + i); ++i)
+	for (int i = 0; *(snames + i); ++i)
 	{
 		char	is_final = 0;
 		for (int j = 0; j < g_conf.fsize; ++j)
@@ -243,28 +250,30 @@ static void	ft_set_transitions(void)
 		if (is_final)
 			continue ;
 
-		item = cJSON_GetObjectItem(trans, *(g_conf.states + i));
-		if (!cJSON_IsArray(item) || (arsize = cJSON_GetArraySize(item)) < 1 || !(*(g_transet + i) = calloc(arsize + 1, sizeof(int [4]))))
-			ft_print_err();
+		item = cJSON_GetObjectItem(trans, *(snames + i));
+		if (!cJSON_IsArray(item) || (arsize = cJSON_GetArraySize(item)) < 1)
+			ft_print_err(JSON_INVALID_STATE_TRANS_ERR, *(snames + i));
+		if (!(*(g_transet + i) = calloc(arsize + 1, sizeof(int [4]))))
+			ft_print_err(ALLOC_ERR, 0);
 		item = (*item).child;
 		cJSON	*cat;
 		char	*str;
 		for (int x = 0; item; ++x)
 		{
 			if (!(*((void **)*(g_transet + i) + x) = malloc(sizeof(int [4]))))
-				ft_print_err();
+				ft_print_err(ALLOC_ERR, 0);
 			cat = cJSON_GetObjectItem(item, "read");
 			if (!cat || !cJSON_IsString(cat) || strlen((*cat).valuestring) != 1)
-				ft_print_err();
+				ft_print_err(JSON_INVALID_TRANS_READ_ERR, (*cat).valuestring);
 			**((int **)*(g_transet + i) + x) = *(*cat).valuestring;
 
 			cat = cJSON_GetObjectItem(item, "to_state");
 			if (!cat || !cJSON_IsString(cat))
-				ft_print_err();
+				ft_print_err(JSON_INVALID_TRANS_TO_STATE_ERR, 0);
 			str = (*cat).valuestring;
-			for (int y = 0; *(g_conf.states + y); ++y)
+			for (int y = 0; *(snames + y); ++y)
 			{
-				if (ft_sequals(*(g_conf.states + y), str))
+				if (ft_sequals(*(snames + y), str))
 				{
 					str = 0;
 					*(*((int **)*(g_transet + i) + x) + 1) = y;
@@ -272,22 +281,22 @@ static void	ft_set_transitions(void)
 				}
 			}
 			if (str)
-				ft_print_err();
+				ft_print_err(JSON_TRANS_TO_STATE_NOT_IN_STATE_LIST_ERR, str);
 
 			cat = cJSON_GetObjectItem(item, "write");
 			if (!cat || !cJSON_IsString(cat) || strlen((*cat).valuestring) != 1)
-				ft_print_err();
+				ft_print_err(JSON_INVALID_TRANS_WRITE_ERR, (*cat).valuestring);
 			*(*((int **)*(g_transet + i) + x) + 2) = *(*cat).valuestring;
 
 			cat = cJSON_GetObjectItem(item, "action");
 			if (!cat || !cJSON_IsString(cat))
-				ft_print_err();
+				ft_print_err(JSON_INVALID_ACTION_ERR, 0);
 			if (ft_sequals("LEFT", (*cat).valuestring))
 				*(*((int **)*(g_transet + i) + x) + 3) = 'L';
 			else if (ft_sequals("RIGHT", (*cat).valuestring))
 				*(*((int **)*(g_transet + i) + x) + 3) = 'R';
 			else
-				ft_print_err();
+				ft_print_err(JSON_UNKNOWN_ACTION_ERR, (*cat).valuestring);
 			item = (*item).next;
 		}
 	}
@@ -351,7 +360,7 @@ void	ft_tm_compute(char *input)
 {
 	char	*tape = strdup(input);
 	if (!tape)
-		ft_print_err();
+		ft_print_err(ALLOC_ERR, 0);
 
 	printf("\"%s\"\n", tape);
 	int		i = 0;
@@ -365,10 +374,14 @@ void	ft_tm_compute(char *input)
 		if (!*(tape + i))
 		{
 			if (!(input = malloc(i + 2)))
-				ft_print_err();
+			{
+				free(tape);
+				ft_print_err(ALLOC_ERR, 0);
+			}
 			strcpy(input, tape);
 			*(input + i) = g_conf.blank;
 			*(input + i + 1) = 0;
+			free(tape);
 			tape = input;
 		}
 
@@ -425,22 +438,22 @@ void	ft_tm_compute(char *input)
 int	main(int ac, char *av[])
 {
 	if (ac == 1)
-		ft_print_err();
+		ft_print_err(NO_ARG_ERR, 0);
 	if (ac == 2)
 	{
 		if (ft_sequals(*++av, "--help") || ft_sequals(*av, "-h"))
 			ft_print_help();
 		else
-			ft_print_err();
+			ft_print_err(NOT_ENOUGH_ARG_ERR, 0);
 	}
 
 	char	*file_read = ft_read_file(*++av);
 	if (!file_read)
-		ft_print_err();
+		ft_print_err(READ_FILE_ERR, 0);
 	g_json = cJSON_Parse(file_read);
 	free(file_read);
 	if (!g_json)
-		ft_print_err();
+		ft_print_err(INVALID_JSON_ERR, 0);
 
 	ft_conf();
 	ft_set_transitions();

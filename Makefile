@@ -11,7 +11,7 @@ GCC= gcc -Wall -Werror -Wextra -g
 
 all : $(NAME)
 
-$(NAME) : $(OBJS) 
+$(NAME) : $(OBJS)
 	@$(GCC) $(OBJS) $(LIB) -no-pie -o $@
 
 %.o: %.c
