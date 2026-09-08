@@ -10,15 +10,16 @@
             { "read" : ".", "to_state": "scanright", "write": ".", "action": "RIGHT"},
             { "read" : "1", "to_state": "scanright", "write": "1", "action": "RIGHT"},
             { "read" : "+", "to_state": "scanright", "write": "+", "action": "RIGHT"},
-            { "read" : "=", "to_state": "eraseone" , "write": ".", "action": "LEFT" }
+            { "read" : "=", "to_state": "eraseone" , "write": "=", "action": "LEFT" }
         ],
         "eraseone": [
-            { "read" : "1", "to_state": "skip", "write": "=", "action": "LEFT"},
-            { "read" : "+", "to_state": "HALT" , "write": "1", "action": "LEFT"}
+            { "read" : "1", "to_state": "skip", "write": "1", "action": "LEFT"},
+            { "read" : "+", "to_state": "addone" , "write": ".", "action": "RIGHT"}
         ],
         "addone": [
             { "read" : "1", "to_state": "scanright", "write": "+", "action": "RIGHT"},
-            { "read" : "+", "to_state": "skip" , "write": "+", "action": "LEFT"}
+            { "read" : "+", "to_state": "skip" , "write": "+", "action": "LEFT"},
+            { "read" : "=", "to_state": "HALT", "write": ".", "action": "LEFT"}
         ],
         "skip": [
             { "read" : "1", "to_state": "skip", "write": "1", "action": "LEFT"},
