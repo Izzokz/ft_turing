@@ -7,6 +7,9 @@
 #include "include/t_conf.h"
 #include "include/err_msg.h"
 
+#define INVALID_BLANK 1
+#define INVALID_UNKNOWN 2
+
 int		g_max_I;
 t_conf	g_conf = {0, 0, 0, 0, 0, 0, 0};
 cJSON	*g_json = 0;
@@ -258,13 +261,26 @@ static void	ft_set_transitions(void)
 		item = (*item).child;
 		cJSON	*cat;
 		char	*str;
+		int		not_in_alpha;
 		for (int x = 0; item; ++x)
 		{
 			if (!(*((void **)*(g_transet + i) + x) = malloc(sizeof(int [4]))))
 				ft_print_err(ALLOC_ERR, 0);
+
 			cat = cJSON_GetObjectItem(item, "read");
 			if (!cat || !cJSON_IsString(cat) || strlen((*cat).valuestring) != 1)
 				ft_print_err(JSON_INVALID_TRANS_READ_ERR, (*cat).valuestring);
+			not_in_alpha = -1;
+			while (*(g_conf.alphabet + ++not_in_alpha))
+			{
+				if (*(*cat).valuestring == *(g_conf.alphabet + not_in_alpha))
+				{
+					not_in_alpha = 0;
+					break ;
+				}
+			}
+			if (not_in_alpha)
+				ft_print_err(JSON_TRANS_READ_NOT_IN_ALPHABET_ERR, (*cat).valuestring);
 			**((int **)*(g_transet + i) + x) = *(*cat).valuestring;
 
 			cat = cJSON_GetObjectItem(item, "to_state");
@@ -286,6 +302,17 @@ static void	ft_set_transitions(void)
 			cat = cJSON_GetObjectItem(item, "write");
 			if (!cat || !cJSON_IsString(cat) || strlen((*cat).valuestring) != 1)
 				ft_print_err(JSON_INVALID_TRANS_WRITE_ERR, (*cat).valuestring);
+			not_in_alpha = -1;
+			while (*(g_conf.alphabet + ++not_in_alpha))
+			{
+				if (*(*cat).valuestring == *(g_conf.alphabet + not_in_alpha))
+				{
+					not_in_alpha = 0;
+					break ;
+				}
+			}
+			if (not_in_alpha)
+				ft_print_err(JSON_TRANS_WRITE_NOT_IN_ALPHABET_ERR, (*cat).valuestring);
 			*(*((int **)*(g_transet + i) + x) + 2) = *(*cat).valuestring;
 
 			cat = cJSON_GetObjectItem(item, "action");
@@ -344,11 +371,11 @@ static char	ft_invalid_input(char *input)
 	for (int i = 0; *(input + i); ++i)
 	{
 		if (*(input + i) == g_conf.blank)
-			return (1);
+			return (INVALID_BLANK);
 		for (int j = 0; "UNICORN"; ++j)
 		{
 			if (!*(g_conf.alphabet + j))
-				return (1);
+				return (INVALID_UNKNOWN);
 			if (*(g_conf.alphabet + j) == *(input + i))
 				break ;
 		}
@@ -371,7 +398,21 @@ void	ft_tm_compute(char *input)
 	int		move;
 	while ("UNICORN")
 	{
-		if (!*(tape + i))
+		if (i == -1)
+		{
+			if (!(input = malloc(strlen(tape) + 2)))
+			{
+				free(tape);
+				ft_print_err(ALLOC_ERR, 0);
+			}
+			strcpy(input + 1, tape);
+			*input = g_conf.blank;
+			free(tape);
+			tape = input;
+			i = 0;
+		}
+
+		else if (!*(tape + i))
 		{
 			if (!(input = malloc(i + 2)))
 			{
@@ -424,11 +465,6 @@ void	ft_tm_compute(char *input)
 
 		*(tape + i) = write;
 		i += (move == 'R') ? 1 : -1;
-		if (i < 0)
-		{
-			printf("TAPE LOST");
-			break ;
-		}
 		state = next_state;
 	}
 	free(tape);
@@ -463,8 +499,11 @@ int	main(int ac, char *av[])
 	ft_print_machine_description();
 	while (*++av)
 	{
-		if (ft_invalid_input(*av))
-			printf("\"%s\" is Invalid.\n\n", *av);
+		ac = ft_invalid_input(*av);
+		if (ac == INVALID_BLANK)
+			printf("\"%s\" is Invalid (One character is a blank).\n\n", *av);
+		else if (ac == INVALID_UNKNOWN)
+			printf("\"%s\" is Invalid (One character is not in the alphabet).\n\n", *av);
 		else
 			ft_tm_compute(*av);
 	}

@@ -1,0 +1,18 @@
+{
+    "name" : "go_back_write_a",
+    "alphabet": [ "a", " " ],
+    "blank" : " ",
+    "states" : [ "go_back", "write_a", "HALT" ],
+    "initial" : "go_back",
+    "finals" : [ "HALT" ],
+    "transitions" : {
+        "go_back": [
+            {"read" : "a", "to_state": "write_a", "write": "a", "action": "LEFT"},
+            {"read" : " ", "to_state": "write_a" , "write": " ", "action": "LEFT"}
+        ],
+        "write_a": [
+            {"read": "a", "to_state": "HALT", "write": "a", "action": "LEFT"},
+            {"read": " ", "to_state": "HALT", "write": "a", "action": "LEFT"}
+        ]
+    }
+}
