@@ -7,8 +7,8 @@
 #include "include/t_conf.h"
 #include "include/err_msg.h"
 
-#define INVALID_BLANK 1
-#define INVALID_UNKNOWN 2
+#define INPUT_INVALID_BLANK 1
+#define INPUT_INVALID_UNKNOWN 2
 
 int		g_max_I;
 t_conf	g_conf = {0, 0, 0, 0, 0, 0, 0};
@@ -371,11 +371,11 @@ static char	ft_invalid_input(char *input)
 	for (int i = 0; *(input + i); ++i)
 	{
 		if (*(input + i) == g_conf.blank)
-			return (INVALID_BLANK);
+			return (INPUT_INVALID_BLANK);
 		for (int j = 0; "UNICORN"; ++j)
 		{
 			if (!*(g_conf.alphabet + j))
-				return (INVALID_UNKNOWN);
+				return (INPUT_INVALID_UNKNOWN);
 			if (*(g_conf.alphabet + j) == *(input + i))
 				break ;
 		}
@@ -500,9 +500,9 @@ int	main(int ac, char *av[])
 	while (*++av)
 	{
 		ac = ft_invalid_input(*av);
-		if (ac == INVALID_BLANK)
+		if (ac == INPUT_INVALID_BLANK)
 			printf("\"%s\" is Invalid (One character is a blank).\n\n", *av);
-		else if (ac == INVALID_UNKNOWN)
+		else if (ac == INPUT_INVALID_UNKNOWN)
 			printf("\"%s\" is Invalid (One character is not in the alphabet).\n\n", *av);
 		else
 			ft_tm_compute(*av);
