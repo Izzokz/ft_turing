@@ -1,0 +1,37 @@
+5. 
+A machine able to run the first machine of this list, the one computing an unary addition. 
+The machine alphabet, states, transitions and input ARE the input of the machine you are writing, encoded as you see fit.
+
+b = alphabet
+s = states
+t = transition
+
+r = scanright
+e = eraseone
+a = addone
+H = HALT
+
+d = read
+o = to_state
+w = write
+c = action
+
+I = RIGHT
+L = LEFT
+
+	b:[1+=],s:[reaH],t:{r:[{d1orw1cI},{ "d" : "+", "o": "r", "w": "1", "c": "I"},
+			{ "d" : "=", "o": "e" , "w": "=", "c": "L" }
+		],
+		"e": [
+			{ "d" : "1", "o": "a", "w": ".", "c": "I"}
+		],
+		"a": [
+			{ "d" : "=", "o": "H", "w": ".", "c": "L"}
+		]
+	}
+	11+111= > xxxxxyz > 11111..
+
+
+
+
+    number_of_states number_of_transitions(for each states) size_of_alphabet(minus blank) total(transition on input) input(size)
