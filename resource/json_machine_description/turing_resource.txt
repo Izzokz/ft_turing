@@ -19,17 +19,13 @@ c = action
 I = RIGHT
 L = LEFT
 
-	b:[1+=],s:[reaH],t:{r:[{d1orw1cI},{ "d" : "+", "o": "r", "w": "1", "c": "I"},
-			{ "d" : "=", "o": "e" , "w": "=", "c": "L" }
-		],
-		"e": [
-			{ "d" : "1", "o": "a", "w": ".", "c": "I"}
-		],
-		"a": [
-			{ "d" : "=", "o": "H", "w": ".", "c": "L"}
-		]
-	}
-	11+111= > xxxxxyz > 11111..
+x = 1
+y = + = .
+z = = = .
+
+b:[1+=],s:[reaH],t:{r:[d1orw1cI,d+orw1cI,d=oew=cL],
+e:[d1oawycI],a:[d=oHwzcL]}11+111= 
+> xxxxxyz > 11111..
 
 
 
