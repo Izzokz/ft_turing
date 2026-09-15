@@ -1,0 +1,31 @@
+5. 
+A machine able to run the first machine of this list, the one computing an unary addition. 
+The machine alphabet, states, transitions and input ARE the input of the machine you are writing, encoded as you see fit.
+
+b = alphabet
+s = states
+t = transition
+
+r = scanright
+e = eraseone
+a = addone
+H = HALT
+
+d = read
+o = to_state
+w = write
+c = action
+
+I = RIGHT
+L = LEFT
+
+x = 1
+z = .
+
+b:[1z+=],s:[reaH],t:{r:[d1orw1cI,d+orw1cI,d=oew=cL],
+e:[d1oawzcI],a:[d=oHwzcL]}11+111= 
+> xxxxxyz > 11111..
+
+./ft_turing resource/json_machine_description/turing.json "b:[1+=],s:[reaH],t:{r:[d1orw1cI,d+orw1cI,d=oew=cL],e:[d1oawzcI],a:[d=oHwzcL]}11+111="
+
+    number_of_states number_of_transitions(for each states) size_of_alphabet(minus blank) total(transition on input) input(size)

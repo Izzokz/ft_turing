@@ -11,11 +11,10 @@ int main(int ac, char **av)
     // std::cout << str << std::endl;
     if(ac != 5)
         return 1;
-    
     if(str4 == "r")
-        std::cout << "{ \"read\" : \"" << str << "\", \"to_state\": \"" << str2 << "\", \"write\": \""  << str3 << "\", \"action\": \"" << "RIGHT" << "\"}" << std::endl;
+        std::cout << "{ \"read\" : \"" << str << "\", \"to_state\": \"" << str2 << "\", \"write\": \""  << str << "\", \"action\": \"" << "RIGHT" << "\"}," << std::endl;
     else if(str4 == "l")
-        std::cout << "{ \"read\" : \"" << str << "\", \"to_state\": \"" << str2 << "\", \"write\": \""  << str3 << "\", \"action\": \"" << "LEFT" << "\"}" << std::endl;
+        std::cout << "{ \"read\" : \"" << str << "\", \"to_state\": \"" << str2 << "\", \"write\": \""  << str << "\", \"action\": \"" << "LEFT" << "\"}," << std::endl;
     else
         std::cout << "{ \"read\" : \"" << str << "\", \"to_state\": \"" << str2 << "\", \"write\": \""  << str3 << "\", \"action\": \"" << str4 << "\"}" << std::endl;
 }

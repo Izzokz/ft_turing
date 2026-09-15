@@ -1,6 +1,6 @@
 {
     "name" : "language_equal",
-    "alphabet": [ "0", "1", ".", "x" ],
+    "alphabet": [ "0", "1", ".", "x", "n", "y"],
     "blank" : ".",
     "states" : [ "answer_y", "answer_n", "replacezero", "replaceone", "scanone", "begin", "HALT" ],
     "initial" : "replacezero",
