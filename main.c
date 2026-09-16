@@ -1,14 +1,5 @@
-#include <fcntl.h> //open
-#include <unistd.h>
-#include <stdlib.h> //malloc
-#include <stdio.h> //printf
-#include <string.h> //strcat,strcpy
-#include "include/cjson/cJSON.h"
-#include "include/t_conf.h"
-#include "include/err_msg.h"
+#include "include/ft_turing.h"
 
-#define INPUT_INVALID_BLANK 1
-#define INPUT_INVALID_UNKNOWN 2
 
 int		g_max_I;
 t_conf	g_conf = {0, 0, 0, 0, 0, 0, 0};
