@@ -7,6 +7,21 @@
 
 ### Program Part :
 
+    We do this project in C but you can use any language otherwise. We use a special library(Cjson) this one permit us to read and parse the json.
+    Certain rules need to be put in the program :
+
+    1. Error :
+
+        In the subject is it explained you need to write a detailed error message.
+
+    2. Input :
+
+        In the execution part the input gonna change but you need to understand there infinit blank left and right of the input like "....111+11=....."
+
+    3. Other :
+
+        Just read the subject and reuse the exemple. You can do thing differently but keep it atleast somewhat the same as the exemple given.
+
     The program part were done by kzhen-cl 
 
 ### JSON Part :
@@ -15,7 +30,9 @@
     
         1. unary_add :
 
-            In mathematics, a unary operation is an operation with only one operand, i.e. a single input. In the case of this project the json file can just reuse the exemple who is unary_sub. Yes you're replacing some line with other things to make it an unary addition.
+            In mathematics, a unary operation is an operation with only one operand, i.e. a single input. 
+            In the case of this project the json file can just reuse the exemple who is unary_sub. 
+            Yes you're replacing some line with other things to make it an unary addition.
     
         2. is_palindrome :
 
@@ -32,7 +49,9 @@
         5. turing :
             
             This one is specific. In the subject they say "encoded as you fit".
-            And for this specific sentence i reduce all the character in the json to a single line "b:[1z+=],s:[reaH],t:{r:[d1orw1cI,d+orw1cI,d=oew=cL],e:[d1oawzcI],a:[d=oHwzcL]}11+111=". If you want more detail go to "resource/json_machine_description/turing_resource.txt" here you have more detail for the how he was made.
+            And for this specific sentence i reduce all the character in the json to a single line 
+            "b:[1z+=],s:[reaH],t:{r:[d1orw1cI,d+orw1cI,d=oew=cL],e:[d1oawzcI],a:[d=oHwzcL]}11+111=". 
+            If you want more detail go to "resource/json_machine_description/turing_resource.txt" here you have more detail for the how he was made.
 
     The JSON part were done by huvillat and kzhen-cl
 

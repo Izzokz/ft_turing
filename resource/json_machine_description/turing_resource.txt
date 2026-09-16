@@ -26,11 +26,10 @@ b:[1z+=],s:[reaH],t:{r:[d1orw1cI,d+orw1cI,d=oew=cL],
 e:[d1oawzcI],a:[d=oHwzcL]}11+111= 
 > xxxxxyz > 11111..
 
-./ft_turing resource/json_machine_description/turing.json "b:[1+=],s:[reaH],t:{r:[d1orw1cI,d+orw1cI,d=oew=cL],e:[d1oawzcI],a:[d=oHwzcL]}11+111="
+./ft_turing resource/json_machine_description/turing.json "b:[1z+=],s:[reaH],t:{r:[d1orw1cI,d+orw1cI,d=oew=cL],e:[d1oawzcI],a:[d=oHwzcL]}11+111="
 
     number_of_states number_of_transitions_for_each_states size_of_alphabet_minus_blank total_transition_on_input size_of_input
 {
-	"name" : "unary_add",
 	"alphabet": [ "1", ".", "+", "=" ],
 	"states" : [ "scanright", "eraseone", "equal", "HALT" ],
 	"transitions" : {
