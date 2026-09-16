@@ -26,6 +26,23 @@ b:[1z+=],s:[reaH],t:{r:[d1orw1cI,d+orw1cI,d=oew=cL],
 e:[d1oawzcI],a:[d=oHwzcL]}11+111= 
 > xxxxxyz > 11111..
 
-./ft_turing resource/json_machine_description/turing.json "b:[1+=],s:[reaH],t:{r:[d1orw1cI,d+orw1cI,d=oew=cL],e:[d1oawzcI],a:[d=oHwzcL]}11+111="
+./ft_turing resource/json_machine_description/turing.json "b:[1z+=],s:[reaH],t:{r:[d1orw1cI,d+orw1cI,d=oew=cL],e:[d1oawzcI],a:[d=oHwzcL]}11+111="
 
-    number_of_states number_of_transitions(for each states) size_of_alphabet(minus blank) total(transition on input) input(size)
+    number_of_states number_of_transitions_for_each_states size_of_alphabet_minus_blank total_transition_on_input size_of_input
+{
+	"alphabet": [ "1", ".", "+", "=" ],
+	"states" : [ "scanright", "eraseone", "equal", "HALT" ],
+	"transitions" : {
+		"scanright": [
+			{ "read" : "1", "to_state": "scanright", "write": "1", "action": "RIGHT"},
+			{ "read" : "+", "to_state": "scanright", "write": "1", "action": "RIGHT"},
+			{ "read" : "=", "to_state": "eraseone" , "write": "=", "action": "LEFT" }
+		],
+		"eraseone": [
+			{ "read" : "1", "to_state": "equal", "write": ".", "action": "RIGHT"}
+		],
+		"equal": [
+			{ "read" : "=", "to_state": "HALT", "write": ".", "action": "LEFT"}
+		]
+	}
+}
