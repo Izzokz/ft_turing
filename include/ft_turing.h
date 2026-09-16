@@ -23,7 +23,16 @@ typedef struct s_conf
 	int		fsize;
 }   t_conf;
 
+extern int		g_max_I;
+extern t_conf	g_conf;
+extern cJSON	*g_json;
+extern void		**g_transet;
 
-
+void	ft_print_err(char *err, char *i);
+void	ft_free_conf(void);
+void	ft_free_transet(void);
+char	ft_sequals(char *s1, char *s2);
+char	*ft_read_file(char *filename);
+char	ft_invalid_input(char *input);
 
 #endif

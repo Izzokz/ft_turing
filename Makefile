@@ -3,7 +3,7 @@ NAME = ft_turing
 LIB = lib/libcjson.a lib/libcjson_utils.a
 INCLUDES = -Iinclude/cjson
 
-SRCS = main.c
+SRCS = main.c source/error.c  source/free.c  source/read_file.c  source/utils.c
 OBJS = $(SRCS:.s=.o)
 # FILES = $(OBJS)
 

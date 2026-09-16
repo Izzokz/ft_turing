@@ -1,112 +1,14 @@
 #include "include/ft_turing.h"
 
-
 int		g_max_I;
 t_conf	g_conf = {0, 0, 0, 0, 0, 0, 0};
 cJSON	*g_json = 0;
 void	**g_transet = 0;
 
-static char	ft_sequals(char *s1, char *s2)
-{
-	int	i;
-
-	if (!s1 || !s2)
-		return (0);
-	i = -1;
-	while (*(s1 + ++i) || *(s2 + i))
-		if (*(s1 + i) != *(s2 + i))
-			break ;
-	return (*(s1 + i) == *(s2 + i));
-}
-
 void	ft_print_help(void)
 {
 	write(1, "usage: ft_turing [-h] jsonfile input\n\npositional arguments:\n\tjsonfile\t\t\tjson description of the machine\n\tinput\t\t\t\tinput of the machine\n\noptional arguments:\n\t-h, --help\t\t\tshow this help message and exit\n", 202);
 	exit(0);
-}
-
-static void	ft_free_conf(void)
-{
-	void	*cp;
-	free(g_conf.name);
-	free(g_conf.alphabet);
-	if (g_conf.states)
-	{
-		cp = g_conf.states;
-		while (*(g_conf.states))
-		{
-			free(*(g_conf.states));
-			++(g_conf.states);
-		}
-		free(cp);
-	}
-	free(g_conf.finals);
-}
-
-static void	ft_free_transet(void)
-{
-	if (g_transet)
-	{
-		for (int i = 0; i < g_max_I; ++i)
-		{
-			if (*(g_transet + i))
-			{
-				for (int j = 0; *((void **)*(g_transet + i) + j); ++j)
-					free(*((void **)*(g_transet + i) + j));
-				free(*(g_transet + i));
-			}
-		}
-		free(g_transet);
-	}
-}
-
-static void	ft_print_err(char *err, char *i)
-{
-	if (!i)
-		printf("ERR[%s]\n", err);
-	else
-		printf("ERR[%s](%s)\n", err, i);
-	ft_free_transet();
-	ft_free_conf();
-	cJSON_Delete(g_json);
-	exit(1);
-}
-
-static char	*ft_read_file(char *filename)
-{
-	int		fd = open(filename, O_RDONLY);
-	if (fd < 0)
-		return (0);
-	char	*file = malloc(1);
-	if (!file)
-		ft_print_err(ALLOC_ERR, 0);
-	*file = 0;
-	char	*cpfile;
-	int		file_size = 0;
-	int		ret;
-	char	buff[1000];
-	while ("UNICORN")
-	{
-		ret = read(fd, buff, 999);
-		if (ret < 0)
-		{
-			free(file);
-			ft_print_err(READ_ERR, 0);
-		}
-		cpfile = file;
-		if (!(file = malloc((file_size += ret) + 1)))
-		{
-			free(cpfile);
-			ft_print_err(ALLOC_ERR, 0);
-		}
-		strcpy(file, cpfile);
-		free(cpfile);
-		*(buff + ret) = 0;
-		strcat(file, buff);
-		if (ret < 999)
-			break ;
-	}
-	return (file);
 }
 
 static void	ft_conf(void)
@@ -355,23 +257,6 @@ static void	ft_print_machine_description(void)
 			printf("%s[%c] => %s; writes %c; goes %c\n", *(g_conf.states + i), **((int **)*(g_transet + i) + j), *(g_conf.states + *(*((int **)*(g_transet + i) + j) + 1)), *(*((int **)*(g_transet + i) + j) + 2), *(*((int **)*(g_transet + i) + j) + 3));
 	}
 	printf("\n");
-}
-
-static char	ft_invalid_input(char *input)
-{
-	for (int i = 0; *(input + i); ++i)
-	{
-		if (*(input + i) == g_conf.blank)
-			return (INPUT_INVALID_BLANK);
-		for (int j = 0; "UNICORN"; ++j)
-		{
-			if (!*(g_conf.alphabet + j))
-				return (INPUT_INVALID_UNKNOWN);
-			if (*(g_conf.alphabet + j) == *(input + i))
-				break ;
-		}
-	}
-	return (0);
 }
 
 void	ft_tm_compute(char *input)
