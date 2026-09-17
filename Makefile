@@ -3,9 +3,9 @@ NAME = ft_turing
 LIB = lib/libcjson.a lib/libcjson_utils.a
 INCLUDES = -Iinclude/cjson
 
-SRCS = main.c
-OBJS = $(SRCS:.s=.o)
-# FILES = $(OBJS)
+SRCS = source/main.c source/error.c source/free.c source/read_file.c source/utils.c source/print.c source/init_conf.c
+OBJS = $(SRCS:source/%.c=obj/%.o)
+FILES = obj
 
 GCC= gcc -Wall -Werror -Wextra -g
 
@@ -14,15 +14,17 @@ all : $(NAME)
 $(NAME) : $(OBJS)
 	@$(GCC) $(OBJS) $(LIB) -no-pie -o $@
 
-%.o: %.c
-	@$(GCC) $(INCLUDES) -c $< -o $@
+obj/%.o: source/%.c
+	@mkdir -p obj
+	@$(GCC) $(INCLUDES) -c $< -o $@ 
 
-# clean :
-# 	rm -f $(OBJS)
+clean :
+	@rm -f $(OBJS)
+	@rm -rf $(FILES)
 
 fclean : clean
-	rm -f $(NAME)
+	@rm -f $(NAME)
 
 re : fclean all
 
-.PHONY: all test clean fclean re
+.PHONY: all clean fclean re
