@@ -1,4 +1,4 @@
-#include "include/ft_turing.h"
+#include "../include/ft_turing.h"
 
 int		g_max_I;
 t_conf	g_conf = {0, 0, 0, 0, 0, 0, 0};
@@ -21,7 +21,7 @@ static void	ft_conf(void)
 		ft_print_err(ALLOC_ERR, 0);
 
 	obj = cJSON_GetObjectItem(g_json, "alphabet");
-	int		arsize;
+	int		arsize = 0;
 	if (!cJSON_IsArray(obj) || (arsize = cJSON_GetArraySize(obj)) < 1)
 		ft_print_err(JSON_INVALID_ALPHABET_ERR, 0);
 	if (!(g_conf.alphabet = malloc(arsize + 1)))
