@@ -34,5 +34,11 @@ void	ft_free_transet(void);
 char	ft_sequals(char *s1, char *s2);
 char	*ft_read_file(char *filename);
 char	ft_invalid_input(char *input);
+void	ft_conf(void);
+void	ft_set_transitions(void);
+void	ft_print_machine_description(void);
+void	ft_print_help(void);
+void	ft_tm_compute(char *input);
+
 
 #endif
