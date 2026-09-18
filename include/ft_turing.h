@@ -39,6 +39,6 @@ void	ft_set_transitions(void);
 void	ft_print_machine_description(void);
 void	ft_print_help(void);
 void	ft_tm_compute(char *input);
-
+void	ft_print_complexity(void);
 
 #endif

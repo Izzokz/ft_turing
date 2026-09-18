@@ -31,6 +31,7 @@ int	main(int ac, char *av[])
 	g_json = 0;
 
 	ft_print_machine_description();
+	ft_print_complexity();
 	while (*++av)
 	{
 		ac = ft_invalid_input(*av);
