@@ -46,23 +46,26 @@ int	main(int ac, char *av[])
 	ft_free_transet();
 }
 
-// name  str
-// alphabet [c, c, c, c]
-// blank c
-// states [str, str, str]
-// initial str
-// finals [str]
 
-// TRANSITION: {
-//     stat[1]
-//     {
-//         [alphabe[], states[], states[], ]]
-//         [alphabe[], states[], states[], ]]
-//         [alphabe[], states[], states[], ]]
-//     }
-//     ...
-// }
 
-// transition = states[i]
-
-// [transition[alphabe[], states[], states[], ]]
+/*
+main
+ │
+ ├── read_file()              pure-ish boundary
+ │
+ ├── parse_config()
+ │      │
+ │      └── Config
+ │
+ ├── build_transitions()
+ │      │
+ │      └── TransitionTable
+ │
+ ├── validate_input()
+ │      │
+ │      └── Valid / Invalid
+ │
+ └── run_machine()
+        │
+        └── MachineResult
+*/

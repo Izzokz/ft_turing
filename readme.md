@@ -71,6 +71,7 @@
 
 ## Resources
 
+    https://github.com/nlohmann/json
     https://en.wikipedia.org/wiki/Unary_operation
     https://github.com/Davegamble/cjson
     https://www.cs.odu.edu/~zeil/cs390/f24/Public/turing-jflap/index.html
