@@ -6,7 +6,12 @@
 #include <iomanip>  // ws
 #include <map>      // map
 #include <ranges> // ranges
+#include <fstream>
+#include <numeric>
+#include <ranges>
+#include <string>
 using namespace std;
+using json = nlohmann::json;
 // -Werror -Wall -Wextra
 // g++ -std=c++20 main.cpp
 
@@ -39,7 +44,7 @@ void	ft_print_help(void)
     exit(0);
 }
 
-std::string remove_leading_whitespace(std::string line)
+std::string remove_leading_whitespace(const std::string& line)
 {
     auto first = line.find_first_not_of(" \t");
 
@@ -48,20 +53,16 @@ std::string remove_leading_whitespace(std::string line)
         : line.substr(first);
 }
 
-
 std::string extract_file(const std::string& file_name)
 {
     std::ifstream file(file_name);
 
-    auto lines = std::ranges::istream_view<std::string>(file);
+    std::string result;
 
-    return std::ranges::fold_left(
-        lines,
-        std::string{},
-        [](std::string result, std::string line) {
-            return result + remove_leading_whitespace(std::move(line));
-        }
-    );
+    for (const auto& line : std::ranges::istream_view<std::string>(file))
+        result += remove_leading_whitespace(line);
+
+    return result;
 }
 
 int main(int ac, char **av)
@@ -75,5 +76,11 @@ int main(int ac, char **av)
 		else
 			ft_print_err(NOT_ENOUGH_ARG_ERR, 0);
 	}
-    extract_file(av[1]);
+    string file_content = extract_file(av[1]);
+    string input = av[2];
+    json J = json::parse(file_content);
+        
 }
+
+// auto blank = J.find("blank");
+// cout << *blank;
