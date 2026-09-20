@@ -1,4 +1,4 @@
-char	ft_sequals(char *s1, char *s2)
+char	ft_sequals(const char *const s1, const char *const s2)
 {
 	int	i;
 

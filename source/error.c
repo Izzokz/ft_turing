@@ -1,6 +1,6 @@
 #include "../include/ft_turing.h"
 
-void	ft_print_err(char *err, char *i)
+void	ft_print_err(const char *const err, const char *const i)
 {
 	if (!i)
 		printf("ERR[%s]\n", err);
@@ -12,7 +12,7 @@ void	ft_print_err(char *err, char *i)
 	exit(1);
 }
 
-char	ft_invalid_input(char *input)
+char	ft_invalid_input(const char *const input)
 {
 	for (int i = 0; *(input + i); ++i)
 	{

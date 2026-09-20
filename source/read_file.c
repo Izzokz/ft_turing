@@ -1,6 +1,6 @@
 #include "../include/ft_turing.h"
 
-char	*ft_read_file(char *filename)
+char	*ft_read_file(const char *const filename)
 {
 	int		fd = open(filename, O_RDONLY);
 	if (fd < 0)
