@@ -2,8 +2,9 @@
 #include <limits.h>
 
 #define MOVE_ERR -1 // MALLOC ERROR OR NO MORE TRANSITION OR USED TO DEFINE UNCALLED STATES
-#define SET_MOVES 1
+#define SET_MOVES (INT_MAX - 1)
 #define DELETE_MOVES INT_MAX
+#define LOOP 1
 #define RUN_END INT_MIN // LIM FOR RUN_PATH OR USED TO DEFINE FINAL STATES
 
 static int	*ft_create_moves_sheet(void)
@@ -85,7 +86,7 @@ void	ft_print_complexity(void)
 {
 	if (!*(g_transet + g_conf.initial))
 	{
-		printf("# Complexity: O(1)\n\n");
+		printf("||INITIAL == FINAL||\n# Complexity: O(1)\n\n");
 		return ;
 	}
 
@@ -110,9 +111,10 @@ void	ft_print_complexity(void)
 	int				depth = 0;
 	int				state = g_conf.initial;
 	int				*last_run_path = NULL;
-	int				last_run_saved = 0;
+	char			last_run_saved = 0;
 	int				all_run = 0;
 	int				move;
+	char			at_least_one_final = 0;
 	while (depth > -1)
 	{
 		int			*current_run_path = malloc(sizeof(int) * (depth + 2));
@@ -158,6 +160,7 @@ void	ft_print_complexity(void)
 
 			if (!*(g_transet + move))
 			{
+				at_least_one_final = 1;
 				*(state_nature + move) = RUN_END;
 				break ;
 			}
@@ -168,7 +171,7 @@ void	ft_print_complexity(void)
 					break ;
 			if (i <= depth)
 			{
-				*(state_nature + move) = 1;
+				*(state_nature + move) = LOOP;
 				break ;
 			}
 
@@ -237,6 +240,8 @@ void	ft_print_complexity(void)
 		else
 			printf("[%s]: BASIC STATE\n", *(g_conf.states + i));
 	}
+	if (!at_least_one_final)
+		printf("/!\\ NO FINAL FOUND /!\\\n");
 	printf("\n");
 
 	for (int i = 0; *(run_list + i); ++i)
@@ -253,8 +258,27 @@ void	ft_print_complexity(void)
 	}
 	printf("\n");
 
-	//int	max_n = 0;
-	// CALCULATE FROM RUN HISTORY
+	int	n = 0;
+	for (int i = 0, new_n, j; *(run_list + i); ++i)
+	{
+		new_n = 0;
+		j = -1;
+		while (*(*(run_list + i) + ++j) != RUN_END)
+			if (*(state_nature + *(*(run_list + i) + j)) == LOOP)
+				++new_n;
+		for (int x = 0; x < j; ++x)
+			if (*(*(run_list + i) + j) == *(*(run_list + i) + x))
+				--new_n;
+		if (new_n > n)
+			n = new_n;
+	}
+	if (n == 1)
+		printf("# Complexity: O(n)\n\n");
+	else if (n)
+		printf("# Complexity: O(n^%d)\n\n", n);
+	else
+		printf("# Complexity: O(1)\n\n");
+
 	free(state_nature);
 	ft_free_run_list(run_list);
 }
