@@ -82,16 +82,16 @@ static inline void	ft_complete_data(int *const state_nature, const int *const *c
 	}
 }
 
-void	ft_print_complexity(void)
+void	ft_print_extra_data(void)
 {
 	if (!*(g_transet + g_conf.initial))
 	{
-		printf("||INITIAL == FINAL||\n# Complexity: O(1)\n\n");
+		printf("/!\\ INITIAL == FINAL /!\\\n\n");
 		return ;
 	}
 
 	if (ft_set_moves() == MOVE_ERR)
-		ft_print_err(ALLOC_ERR, "bonus_complexity.c");
+		ft_print_err(ALLOC_ERR, "print_extra_data.c");
 
 	int				*state_nature = calloc(sizeof(int), g_max_I);
 	if (!state_nature)
@@ -104,7 +104,7 @@ void	ft_print_complexity(void)
 	{
 		free(state_nature);
 		ft_free_moves();
-		ft_print_err(ALLOC_ERR, "bonus_complexity.c");
+		ft_print_err(ALLOC_ERR, "print_extra_data.c");
 	}
 
 	int				run = 0;
@@ -112,7 +112,7 @@ void	ft_print_complexity(void)
 	int				state = g_conf.initial;
 	int				*last_run_path = NULL;
 	char			last_run_saved = 0;
-	int				all_run = 0;
+	int				total_runs = 0;
 	int				move;
 	char			at_least_one_final = 0;
 	while (depth > -1)
@@ -123,7 +123,7 @@ void	ft_print_complexity(void)
 			ft_free_run_list(run_list);
 			free(state_nature);
 			ft_free_moves();
-			ft_print_err(ALLOC_ERR, "bonus_complexity.c");
+			ft_print_err(ALLOC_ERR, "print_extra_data.c");
 		}
 		*current_run_path = g_conf.initial;
 		*(current_run_path + depth + 1) = RUN_END;
@@ -150,13 +150,16 @@ void	ft_print_complexity(void)
 				ft_free_run_list(run_list);
 				free(state_nature);
 				ft_free_moves();
-				ft_print_err(ALLOC_ERR, "bonus_complexity.c");
+				ft_print_err(ALLOC_ERR, "print_extra_data.c");
 			}
 			for (int i = 0; i <= depth; ++i)
 				*(current_run_path + i) = *(tmp + i);
 			free(tmp);
 			move = *(current_run_path + depth + 1) = *(*((int **)*(g_transet + state) + move) + 1);
 			*(current_run_path + depth + 2) = RUN_END;
+
+			if (*(state_nature + move) == LOOP)
+				break ;
 
 			if (!*(g_transet + move))
 			{
@@ -178,57 +181,54 @@ void	ft_print_complexity(void)
 			++depth;
 		}
 
-		if (depth >= 0)
+		char	eligible = 1;
+
+		if (move != MOVE_ERR)
 		{
-			char	eligible = 1;
-
-			if (move != MOVE_ERR && *(state_nature + move))
+			for (int x = 0, i; x < run; ++x)
 			{
-				for (int x = 0, i; x < run; ++x)
-				{
-					i = -1;
-					while (*(*(run_list + x) + ++i) != RUN_END)
-						if (*(current_run_path + i) == RUN_END || *(*(run_list + x) + i) != *(current_run_path + i))
-							break ;
-					if (*(*(run_list + x) + i) == RUN_END || ((*(*(run_list + x) + i + 1) == RUN_END) && (*(current_run_path + i) == RUN_END) && (*(*(run_list + x) + i) == *(current_run_path + i - 1))))
-					{
-						eligible = 0;
+				i = -1;
+				while (*(*(run_list + x) + ++i) != RUN_END)
+					if (*(current_run_path + i) == RUN_END || *(*(run_list + x) + i) != *(current_run_path + i))
 						break ;
-					}
-				}
-			}
-			else
-				eligible = 0;
-
-			if (eligible)
-			{
-				int	**tmp = run_list;
-				if (!(run_list = malloc(sizeof(int *) * (run + 2))))
+				if (*(*(run_list + x) + i) == RUN_END || (*(current_run_path + i) == RUN_END && *(*(run_list + x) + i - 1) == *(current_run_path + i - 1)))
 				{
-					free(current_run_path);
-					ft_free_run_list(tmp);
-					free(state_nature);
-					ft_free_moves();
-					ft_print_err(ALLOC_ERR, "bonus_complexity.c");
+					eligible = 0;
+					break ;
 				}
-				for (int x = 0; x < run; ++x)
-					*(run_list + x) = *(tmp + x);
-				free(tmp);
-				*(run_list + run) = current_run_path;
-				*(run_list + run + 1) = 0;
-				++run;
-				last_run_saved = 1;
 			}
 		}
+		else
+			eligible = 0;
+		if (eligible)
+		{
+			int	**tmp = run_list;
+			if (!(run_list = malloc(sizeof(int *) * (run + 2))))
+			{
+				free(current_run_path);
+				ft_free_run_list(tmp);
+				free(state_nature);
+				ft_free_moves();
+				ft_print_err(ALLOC_ERR, "print_extra_data.c");
+			}
+			for (int x = 0; x < run; ++x)
+				*(run_list + x) = *(tmp + x);
+			free(tmp);
+			*(run_list + run) = current_run_path;
+			*(run_list + run + 1) = 0;
+			++run;
+			last_run_saved = 1;
+		}
 		last_run_path = current_run_path;
-		++all_run;
+		++total_runs;
 	}
+
 	if (!last_run_saved)
 		free(last_run_path);
 	ft_free_moves();
 
 	ft_complete_data(state_nature, (const int *const *const)run_list);
-	printf("# ALL RUN: %d\n# STATES NATURE:\n", all_run);
+	printf("# TOTAL RUNS: %d\n# STATES NATURE:\n", total_runs);
 	for (int i = 0; i < g_max_I; ++i)
 	{
 		if (*(state_nature + i) == MOVE_ERR)
@@ -242,42 +242,28 @@ void	ft_print_complexity(void)
 	}
 	if (!at_least_one_final)
 		printf("/!\\ NO FINAL FOUND /!\\\n");
-	printf("\n");
+	printf("\n# POSSIBLE PATHS:\n");
 
-	for (int i = 0; *(run_list + i); ++i)
+	for (int i = 0, j; *(run_list + i); ++i)
 	{
-		for (int j = 0; *(*(run_list + i) + j) != RUN_END; ++j)
-		{
-			if (!j)
-				printf("[%d, ", *(*(run_list + i) + j));
-			else if (*(*(run_list + i) + j + 1) == RUN_END)
-				printf("%d]\n", *(*(run_list + i) + j));
-			else
-				printf("%d, ", *(*(run_list + i) + j));
-		}
-	}
-	printf("\n");
-
-	int	n = 0;
-	for (int i = 0, new_n, j; *(run_list + i); ++i)
-	{
-		new_n = 0;
+		int			*actual_path = *(run_list + i);
 		j = -1;
-		while (*(*(run_list + i) + ++j) != RUN_END)
-			if (*(state_nature + *(*(run_list + i) + j)) == LOOP)
-				++new_n;
-		for (int x = 0; x < j; ++x)
-			if (*(*(run_list + i) + j) == *(*(run_list + i) + x))
-				--new_n;
-		if (new_n > n)
-			n = new_n;
+		while (*(actual_path + ++j) != RUN_END)
+		{
+			char	*state = *(g_conf.states + *(actual_path + j));
+			if (!j)
+				printf("[(%s) > ", state);
+			else if (*(*(run_list + i) + j + 1) == RUN_END)
+				printf("(%s)]", state);
+			else
+				printf("(%s) > ", state);
+		}
+		if (*(state_nature + *(actual_path + j - 1)) == LOOP)
+			printf(" >>LOOP<<\n");
+		else
+			printf(" >>FINAL<<\n");
 	}
-	if (n == 1)
-		printf("# Complexity: O(n)\n\n");
-	else if (n)
-		printf("# Complexity: O(n^%d)\n\n", n);
-	else
-		printf("# Complexity: O(1)\n\n");
+	printf("\n");
 
 	free(state_nature);
 	ft_free_run_list(run_list);
