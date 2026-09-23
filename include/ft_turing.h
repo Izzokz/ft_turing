@@ -6,11 +6,15 @@
 # include <stdlib.h> //malloc
 # include <stdio.h>  //printf
 # include <string.h> //strcat,strcpy
+# include <signal.h>
 # include "cjson/cJSON.h"
 # include "err_msg.h"
 
+# define PROG_NEXT -1
+# define PROG_STOP -2
 # define INPUT_INVALID_BLANK 1
 # define INPUT_INVALID_UNKNOWN 2
+# define MAX_SAVE 69
 
 typedef struct s_conf
 {
@@ -23,11 +27,15 @@ typedef struct s_conf
 	int		fsize;
 }   t_conf;
 
+extern int		g_prog_state;
 extern int		g_max_I;
 extern t_conf	g_conf;
 extern cJSON	*g_json;
 extern void		**g_transet;
 
+void	ft_sig_next(int);
+void	ft_sig_stop(int);
+void	ft_sig_nihil(int);
 void	ft_print_err(const char *const err, const char *const i);
 void	ft_free_conf(void);
 void	ft_free_transet(void);
@@ -38,7 +46,8 @@ void	ft_conf(void);
 void	ft_set_transitions(void);
 void	ft_print_machine_description(void);
 void	ft_print_help(void);
-void	ft_tm_compute(char *input);
+void	ft_tm_compute(char *input, int execution_data[MAX_SAVE][2], int *const execution_index);
 void	ft_print_extra_data(void);
+void	ft_print_complexity_from_data(int execution_data[MAX_SAVE][2]);
 
 #endif

@@ -1,0 +1,14 @@
+{
+	"name" : "INFINITY",
+	"alphabet": [ "8", " " ],
+	"blank" : " ",
+	"states" : [ "INFINITY", "NEVER_STOPS" ],
+	"initial" : "INFINITY",
+	"finals" : [ "NEVER_STOPS" ],
+	"transitions" : {
+		"INFINITY": [
+			{"read" : "8", "to_state": "INFINITY", "write": "8", "action": "RIGHT"},
+			{"read" : " ", "to_state": "INFINITY" , "write": "8", "action": "RIGHT"}
+		]
+	}
+}

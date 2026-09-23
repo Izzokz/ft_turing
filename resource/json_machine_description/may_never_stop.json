@@ -1,0 +1,14 @@
+{
+	"name" : "may_never_stop",
+	"alphabet": [ "f", "A" ],
+	"blank" : "A",
+	"states" : [ "stop_or_not", "sutopid(just a stupid way to merge \"stop\" and \"stupid\")" ],
+	"initial" : "stop_or_not",
+	"finals" : [ "sutopid(just a stupid way to merge \"stop\" and \"stupid\")" ],
+	"transitions" : {
+		"stop_or_not": [
+			{"read" : "f", "to_state": "sutopid(just a stupid way to merge \"stop\" and \"stupid\")", "write": "A", "action": "RIGHT"},
+			{"read" : "A", "to_state": "stop_or_not" , "write": "A", "action": "RIGHT"}
+		]
+	}
+}

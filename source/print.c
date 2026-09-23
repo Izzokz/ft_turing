@@ -44,21 +44,27 @@ void	ft_print_machine_description(void)
 }
 
 
-void	ft_tm_compute(char *input)
+void	ft_tm_compute(char *input, int execution_data[MAX_SAVE][2], int *const execution_index)
 {
 	char	*tape = strdup(input);
 	if (!tape)
 		ft_print_err(ALLOC_ERR, 0);
 
 	printf("\"%s\"\n", tape);
+
+	int		init_size = strlen(input);
+	int		steps = 0;
+
 	int		i = 0;
 	int		state = g_conf.initial;
 	int		c;
 	int		write;
 	int		next_state;
 	int		move;
-	while ("UNICORN")
+	while (!g_prog_state)
 	{
+		++steps;
+
 		if (i == -1)
 		{
 			if (!(input = malloc(strlen(tape) + 2)))
@@ -130,4 +136,12 @@ void	ft_tm_compute(char *input)
 	}
 	free(tape);
 	printf("\n\n");
+	if (g_prog_state)
+		return ;
+	if (*execution_index < MAX_SAVE)
+	{
+		**(execution_data + *execution_index) = init_size;
+		*(*(execution_data + *execution_index) + 1) = steps;
+		++*execution_index;
+	}
 }

@@ -115,7 +115,7 @@ void	ft_print_extra_data(void)
 	int				total_runs = 0;
 	int				move;
 	char			at_least_one_final = 0;
-	while (depth > -1)
+	while (depth > -1 && !g_prog_state)
 	{
 		int			*current_run_path = malloc(sizeof(int) * (depth + 2));
 		if (!current_run_path)
@@ -133,7 +133,7 @@ void	ft_print_extra_data(void)
 			free(last_run_path);
 		last_run_saved = 0;
 
-		while ("UNICORN")
+		while (!g_prog_state)
 		{
 			state = *(current_run_path + depth);
 			move = ft_get_next_move(state);
@@ -179,6 +179,13 @@ void	ft_print_extra_data(void)
 			}
 
 			++depth;
+		}
+
+		if (g_prog_state)
+		{
+			ft_free_moves();
+			free(current_run_path);
+			goto end;
 		}
 
 		char	eligible = 1;
@@ -227,9 +234,12 @@ void	ft_print_extra_data(void)
 		free(last_run_path);
 	ft_free_moves();
 
-	ft_complete_data(state_nature, (const int *const *const)run_list);
-	printf("# TOTAL RUNS: %d\n# STATES NATURE:\n", total_runs);
-	for (int i = 0; i < g_max_I; ++i)
+	if (!g_prog_state)
+	{
+		ft_complete_data(state_nature, (const int *const *const)run_list);
+		printf("# TOTAL RUNS: %d\n# STATES NATURE:\n", total_runs);
+	}
+	for (int i = 0; i < g_max_I && !g_prog_state; ++i)
 	{
 		if (*(state_nature + i) == MOVE_ERR)
 			printf("[%s]: NEVER CALLED\n", *(g_conf.states + i));
@@ -240,15 +250,18 @@ void	ft_print_extra_data(void)
 		else
 			printf("[%s]: BASIC STATE\n", *(g_conf.states + i));
 	}
-	if (!at_least_one_final)
-		printf("/!\\ NO FINAL FOUND /!\\\n");
-	printf("\n# POSSIBLE PATHS:\n");
+	if (!g_prog_state)
+	{
+		if (!at_least_one_final)
+			printf("/!\\ NO FINAL FOUND /!\\\n");
+		printf("\n# POSSIBLE PATHS:\n");
+	}
 
-	for (int i = 0, j; *(run_list + i); ++i)
+	for (int i = 0, j; *(run_list + i) && !g_prog_state; ++i)
 	{
 		int			*actual_path = *(run_list + i);
 		j = -1;
-		while (*(actual_path + ++j) != RUN_END)
+		while (*(actual_path + ++j) != RUN_END && !g_prog_state)
 		{
 			char	*state = *(g_conf.states + *(actual_path + j));
 			if (!j)
@@ -265,6 +278,7 @@ void	ft_print_extra_data(void)
 	}
 	printf("\n");
 
+end:
 	free(state_nature);
 	ft_free_run_list(run_list);
 }

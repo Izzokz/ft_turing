@@ -8,6 +8,8 @@ void	ft_conf(void)
 	g_conf.name = strdup((*obj).valuestring);
 	if (!g_conf.name)
 		ft_print_err(ALLOC_ERR, 0);
+	if (g_prog_state)
+		return ;
 
 	obj = cJSON_GetObjectItem(g_json, "alphabet");
 	int		arsize;
@@ -18,23 +20,25 @@ void	ft_conf(void)
 	int		i = -1;
 	char	c;
 	obj = (*obj).child;
-	while (obj)
+	while (obj && !g_prog_state)
 	{
 		if (!cJSON_IsString(obj) || strlen((*obj).valuestring) != 1)
 			ft_print_err(JSON_INVALID_CHARACTER_ALPHABET_ERR, (*obj).valuestring);
 		*(g_conf.alphabet + ++i) = c = *((*obj).valuestring);
-		for (int x = 0; x < i; ++x)
+		for (int x = 0; x < i && !g_prog_state; ++x)
 			if (c == *(g_conf.alphabet + x))
 				ft_print_err(JSON_DUP_CHARACTER_ALPHABET_ERR, (*obj).valuestring);
 		obj = (*obj).next;
 	}
 	*(g_conf.alphabet + arsize) = 0;
+	if (g_prog_state)
+		return ;
 
 	obj = cJSON_GetObjectItem(g_json, "blank");
 	if (!cJSON_IsString(obj) || !(*obj).valuestring || (strlen((*obj).valuestring) != 1))
 		ft_print_err(JSON_INVALID_BLANK_ERR, (*obj).valuestring);
 	g_conf.blank = c = *((*obj).valuestring);
-	for (int x = 0; *(g_conf.alphabet + x); ++x)
+	for (int x = 0; *(g_conf.alphabet + x) && !g_prog_state; ++x)
 	{
 		if (c == *(g_conf.alphabet + x))
 		{
@@ -42,6 +46,8 @@ void	ft_conf(void)
 			break ;
 		}
 	}
+	if (g_prog_state)
+		return ;
 	if (c)
 		ft_print_err(JSON_BLANK_NOT_IN_ALPHABET_ERR, (*obj).valuestring);
 
@@ -53,22 +59,24 @@ void	ft_conf(void)
 	i = -1;
 	char	*str;
 	obj = (*obj).child;
-	while (obj)
+	while (obj && !g_prog_state)
 	{
 		if (!cJSON_IsString(obj))
 			ft_print_err(JSON_INVALID_STATE_ERR, 0);
 		if (!(*(g_conf.states + ++i) = str = strdup((*obj).valuestring)))
 			ft_print_err(ALLOC_ERR, 0);
-		for (int x = 0; x < i; ++x)
+		for (int x = 0; x < i && !g_prog_state; ++x)
 			if (ft_sequals(str, *(g_conf.states + x)))
 				ft_print_err(JSON_DUP_STATE_ERR, (*obj).valuestring);
 		obj = (*obj).next;
 	}
+	if (g_prog_state)
+		return ;
 
 	obj = cJSON_GetObjectItem(g_json, "initial");
 	if (!cJSON_IsString(obj) || !(str = (*obj).valuestring))
 		ft_print_err(JSON_INVALID_INITIAL_ERR, (*obj).valuestring);
-	for (int x = 0; *(g_conf.states + x); ++x)
+	for (int x = 0; *(g_conf.states + x) && !g_prog_state; ++x)
 	{
 		if (ft_sequals(str, *(g_conf.states + x)))
 		{
@@ -77,6 +85,8 @@ void	ft_conf(void)
 			break ;
 		}
 	}
+	if (g_prog_state)
+		return ;
 	if (str)
 		ft_print_err(JSON_INITIAL_NOT_IN_STATE_LIST_ERR, str);
 
@@ -87,11 +97,11 @@ void	ft_conf(void)
 		ft_print_err(ALLOC_ERR, 0);
 	i = -1;
 	obj = (*obj).child;
-	while (obj)
+	while (obj && !g_prog_state)
 	{
 		if (!cJSON_IsString(obj) || !(str = (*obj).valuestring))
 			ft_print_err(JSON_INVALID_FINAL_ERR, (*obj).valuestring);
-		for (int x = 0; *(g_conf.states + x); ++x)
+		for (int x = 0; *(g_conf.states + x) && !g_prog_state; ++x)
 		{
 			if (ft_sequals(str, *(g_conf.states + x)))
 			{
@@ -100,9 +110,11 @@ void	ft_conf(void)
 				break ;
 			}
 		}
+		if (g_prog_state)
+			return ;
 		if (str)
 			ft_print_err(JSON_FINAL_NOT_IN_STATE_LIST_ERR, str);
-		for (int x = 0; x < i; ++x)
+		for (int x = 0; x < i && !g_prog_state; ++x)
 			if (*(g_conf.finals + i) == *(g_conf.finals + x))
 				ft_print_err(JSON_DUP_FINAL_ERR, (*obj).valuestring);
 		obj = (*obj).next;
@@ -121,7 +133,7 @@ void	ft_set_transitions(void)
 	if (!cJSON_IsObject(trans))
 		ft_print_err(JSON_INVALID_TRANS_LIST_ERR, 0);
 	int			arsize;
-	for (int i = 0; *(snames + i); ++i)
+	for (int i = 0; *(snames + i) && !g_prog_state; ++i)
 	{
 		char	is_final = 0;
 		for (int j = 0; j < g_conf.fsize; ++j)

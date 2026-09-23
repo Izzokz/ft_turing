@@ -13,7 +13,7 @@ char	*ft_read_file(const char *const filename)
 	int		file_size = 0;
 	int		ret;
 	char	buff[1000];
-	while ("UNICORN")
+	while ("UNICORN" && !g_prog_state)
 	{
 		ret = read(fd, buff, 999);
 		if (ret < 0)
@@ -33,6 +33,11 @@ char	*ft_read_file(const char *const filename)
 		strcat(file, buff);
 		if (ret < 999)
 			break ;
+	}
+	if (g_prog_state)
+	{
+		free(file);
+		return (0);
 	}
 	return (file);
 }
