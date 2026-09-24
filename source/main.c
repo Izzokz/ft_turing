@@ -55,13 +55,13 @@ int	main(int ac, char *av[])
 	if (g_prog_state)
 		goto end;
 
-	int		execution_data[MAX_SAVE][2];
+	t_edata		execution_data;
 	for (int i = 0; i < MAX_SAVE; ++i)
 	{
 		**(execution_data + i) = 0;
 		*(*(execution_data + i) + 1) = 0;
+		*(*(execution_data + i) + 2) = 0;
 	}
-	int		execution_index = 0;
 	signal(SIGINT, ft_sig_next);
 	while (*++av && g_prog_state != PROG_STOP)
 	{
@@ -72,7 +72,7 @@ int	main(int ac, char *av[])
 		else if (ac == INPUT_INVALID_UNKNOWN)
 			printf("\"%s\" is Invalid (One character is not in the alphabet).\n\n", *av);
 		else
-			ft_tm_compute(*av, execution_data, &execution_index);
+			ft_tm_compute(*av, execution_data);
 	}
 	signal(SIGINT, ft_sig_stop);
 

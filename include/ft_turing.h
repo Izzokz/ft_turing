@@ -16,7 +16,7 @@
 # define INPUT_INVALID_UNKNOWN 2
 # define MAX_SAVE 69
 
-typedef struct s_conf
+typedef struct	s_conf
 {
 	char	*name;
 	char	*alphabet;
@@ -26,6 +26,8 @@ typedef struct s_conf
 	int		*finals;
 	int		fsize;
 }   t_conf;
+
+typedef int		t_edata[MAX_SAVE][3];
 
 extern int		g_prog_state;
 extern int		g_max_I;
@@ -46,8 +48,8 @@ void	ft_conf(void);
 void	ft_set_transitions(void);
 void	ft_print_machine_description(void);
 void	ft_print_help(void);
-void	ft_tm_compute(char *input, int execution_data[MAX_SAVE][2], int *const execution_index);
+void	ft_tm_compute(char *input, t_edata);
 void	ft_print_extra_data(void);
-void	ft_print_complexity_from_data(int execution_data[MAX_SAVE][2]);
+void	ft_print_complexity_from_data(t_edata);
 
 #endif

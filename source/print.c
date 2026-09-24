@@ -44,7 +44,7 @@ void	ft_print_machine_description(void)
 }
 
 
-void	ft_tm_compute(char *input, int execution_data[MAX_SAVE][2], int *const execution_index)
+void	ft_tm_compute(char *input, t_edata execution_data)
 {
 	char	*tape = strdup(input);
 	if (!tape)
@@ -138,10 +138,14 @@ void	ft_tm_compute(char *input, int execution_data[MAX_SAVE][2], int *const exec
 	printf("\n\n");
 	if (g_prog_state)
 		return ;
-	if (*execution_index < MAX_SAVE)
+	for (int x = 0; x < MAX_SAVE; ++x)
 	{
-		**(execution_data + *execution_index) = init_size;
-		*(*(execution_data + *execution_index) + 1) = steps;
-		++*execution_index;
+		if (**(execution_data + x) == init_size || !*(*(execution_data + x) + 2))
+		{
+			**(execution_data + x) = init_size;
+			*(*(execution_data + x) + 1) += steps;
+			++*(*(execution_data + x) + 2);
+			break ;
+		}
 	}
 }
