@@ -1,0 +1,14 @@
+{
+	"name" : "nullify",
+	"alphabet": [ "0", "1", "E" ],
+	"blank" : "E",
+	"states" : [ "replace", "E" ],
+	"initial" : "replace",
+	"finals" : [ "E" ],
+	"transitions" : {
+		"replace": [
+			{"read": "1", "to_state": "replace", "write": "0", "action": "RIGHT"},
+			{"read": "0", "to_state": "replace" , "write": "0", "action": "RIGHT"}
+		]
+	}
+}
