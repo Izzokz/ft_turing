@@ -10,11 +10,16 @@
 #include <string>
 using namespace std;
 using json = nlohmann::json;
+
+# define INPUT_INVALID_BLANK 1
+# define INPUT_INVALID_UNKNOWN 2
+
+// # define ERROR_MESSAGE(err) ("ERR[" + std::string(err) + "]")
 // -Werror -Wall -Wextra
 // g++ -std=c++20 main.cpp
 
 
-char	ft_sequals(char *s1, char *s2)
+char	ft_sequals(const char *s1, const char *s2)
 {
 	int	i;
 
@@ -27,13 +32,11 @@ char	ft_sequals(char *s1, char *s2)
 	return (*(s1 + i) == *(s2 + i));
 }
 
-void	ft_print_err(char *err, char *i)
+std::string ft_print_err(const std::string& err, const std::string* i)
 {
-	if (!i)
-		printf("ERR[%s]\n", err);
-	else
-		printf("ERR[%s](%s)\n", err, i);
-	exit(1);
+    if (i == nullptr)
+        return "ERR[" + err + "]";
+    return "ERR[" + err + "](" + *i + ")";
 }
 
 void	ft_print_help(void)
@@ -63,22 +66,54 @@ std::string extract_file(const std::string& file_name)
     return result;
 }
 
+std::optional<json> parse_json(const std::string& input)
+{
+    try {
+        return json::parse(input);
+    } catch (const json::parse_error& e) {
+        return std::nullopt;
+    }
+}
+
+std::string 
+
+
 int main(int ac, char **av)
 {
     if (ac == 1)
-		ft_print_err(NO_ARG_ERR, 0);
+		ft_print_err(NO_ARG_ERR, nullptr);
 	if (ac == 2)
 	{
-		if (ft_sequals(*++av, "--help") || ft_sequals(*av, "-h"))
+		if (ft_sequals(av[1], "--help") || ft_sequals(av[1], "-h"))
 			ft_print_help();
 		else
-			ft_print_err(NOT_ENOUGH_ARG_ERR, 0);
+			cout << ft_print_err(NOT_ENOUGH_ARG_ERR, nullptr);
+		return 1;
 	}
-    string file_content = extract_file(av[1]);
-    string input = av[2];
-    json J = json::parse(file_content);
-        
+
+	string file_content = extract_file(av[1]);
+	if(file_content.empty())
+	{ cout << ft_print_err(READ_FILE_ERR, nullptr); return 1; }
+
+	if (auto j = parse_json(file_content)) 
+	{
+		//check j
+	}
+	else 
+	{ cout << ft_print_err(INVALID_JSON_ERR, nullptr); return 1; }
+
+	//struct conf
+	//set transitions
+	
+	//print machine description
+	//check input
+	//print input
 }
 
+
+// J.contains
 // auto blank = J.find("blank");
 // cout << *blank;
+// string file_content = extract_file(av[1]);
+// string input = av[2];
+// json J = json::parse(file_content);
