@@ -82,12 +82,10 @@ std::string print_machine_description()
 	return "PLACEHOLDER";
 }
 
-std::optional<std::string> check_json(const std::optional<json>& j)
-{
-	if (!j)
-        return "JSON is empty";
 
-    const std::array<std::string, 7> required_keys = {
+std::optional<std::string> check_required_keys(const std::optional<json>& j)
+{
+	const std::array<std::string, 7> required_keys = {
         "name",
         "alphabet",
         "blank",
@@ -102,6 +100,64 @@ std::optional<std::string> check_json(const std::optional<json>& j)
 		if (!j->contains(key))
 			return EMPTY_KEY(key);
 	}
+
+}
+
+// std::optional<std::string> check_types(const std::optional<json>& j)
+// {
+
+// }
+
+// std::optional<std::string> check_value(const std::optional<json>& j)
+// {
+
+// }
+
+// std::optional<std::string> check_alphabet(const json& j);
+// std::optional<std::string> check_states(const json& j);
+// std::optional<std::string> check_transitions(const json& j);
+
+/*if (!j->at("name").is_string() ||
+    j->at("name").get<std::string>().find_first_not_of(" \t\n\r") == std::string::npos)
+{
+    return "NAME IS EMPTY";
+
+check_required_keys()
+    ├── Does "name" exist?          ✓
+    ├── Does "alphabet" exist?      ✓
+    └── Does "transitions" exist?   ✓
+
+check_types()
+    ├── Is "name" a string?         ✓
+    ├── Is "alphabet" an array?     ✓
+    └── Is "transitions" an object? ✓
+
+check_values()
+    ├── Is "name" non-empty?        ✓
+    ├── Is blank in alphabet?       ✓
+    └── Is initial in states?       ✓
+}*/
+
+
+std::optional<std::string> check_json(const std::optional<json>& j)
+{
+	if (!j)
+        return "JSON is empty";
+
+	if (auto error = check_required_keys(*j))
+        return error;
+
+    // if (auto error = check_types(*j))
+    //     return error;
+
+    // if (auto error = check_alphabet(*j))
+    //     return error;
+
+    // if (auto error = check_states(*j))
+    //     return error;
+
+    // if (auto error = check_transitions(*j))
+    //     return error;
 
 	//check
 
@@ -130,7 +186,7 @@ int main(int ac, char **av)
 		auto error = check_json(j);
 		if (error)
 			{ cout << ft_print_err(*error, nullptr) << endl; return 1; }
-
+		cout  << "HERE OUTPUT : " << j->at("name").get<std::string>() << endl;
 		// struct conf
 	}
 	else 
