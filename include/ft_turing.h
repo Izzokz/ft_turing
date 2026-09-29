@@ -7,6 +7,7 @@
 # include <stdio.h>  //printf
 # include <string.h> //strcat,strcpy
 # include <signal.h>
+# include <math.h>
 # include "cjson/cJSON.h"
 # include "err_msg.h"
 

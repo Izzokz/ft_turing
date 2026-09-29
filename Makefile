@@ -12,11 +12,11 @@ GCC= gcc -Wall -Werror -Wextra -g
 all : $(NAME)
 
 $(NAME) : $(OBJS)
-	@$(GCC) $(OBJS) $(LIB) -no-pie -o $@
+	@$(GCC) $(OBJS) $(LIB) -no-pie -o $@ -lm
 
 obj/%.o: source/%.c
 	@mkdir -p obj
-	@$(GCC) $(INCLUDES) -c $< -o $@ 
+	@$(GCC) $(INCLUDES) -c $< -o $@
 
 clean :
 	@rm -f $(OBJS)

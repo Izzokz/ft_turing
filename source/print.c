@@ -136,7 +136,7 @@ void	ft_tm_compute(char *input, t_edata execution_data)
 	}
 	free(tape);
 	printf("\n\n");
-	if (g_prog_state)
+	if (g_prog_state || !init_size)
 		return ;
 	for (int x = 0; x < MAX_SAVE; ++x)
 	{
