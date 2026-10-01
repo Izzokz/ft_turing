@@ -2,7 +2,7 @@
 
 compilation_ft()
 {
-    g++ -std=c++20 main.cpp
+    g++ -std=c++20 -g main.cpp
     exit 0
 }
 
