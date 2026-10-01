@@ -1,9 +1,16 @@
 #include "../include/ft_turing.h"
 
 #define POS(x) ((x) < 0 ? -(x) : (x))
-#define EPSILON .15L
+#define EPSILON .1L
 #define GET_MIN_RANGE(x) ((x) * EPSILON < 2.L ? 2.L : (x) * EPSILON)
 #define TARGET_RANGE .9L
+
+/*
+* WHY SOME TESTS ARE NEGATIVE WHILE THE <epc> MATCHES (n^x)?
+	* Because individual tests fail if one case is not in range while estimating the polynomial degree work with a mean.
+	* Imagine if (min == .78) and (max == .98) : fails (n^2) because <min> not in the range but <epc> is in range of (2.0 +/- 10%).
+	* That is why <epc> is useful.
+*/
 
 static char	ft_is_constant(t_edata execution_data, int max)
 {
@@ -190,32 +197,36 @@ void	ft_print_complexity_from_data(t_edata execution_data)
 	if (!*(*(execution_data + 10) + 2))
 		printf("/!\\ LESS THAN TEN \"EXEC\" SAVED : TIME COMPLEXITY CALCULATION SHOULD NOT BE ACCURATE /!\\\n");
 
+	char		*is_const = "";
 	if (ft_is_constant(execution_data, max))
+	{
 		printf("\n# O(1): POSITIVE\n# O(logn): ");
+		is_const = " (However, it is constant so consider it NEGATIVE)";
+	}
 	else
 		printf("\n# O(1): NEGATIVE\n# O(logn): ");
 	if (ft_is_logarithmic(execution_data, max, max_ref, max_size))
-		printf("POSITIVE\n# O(n): ");
+		printf("POSITIVE%s\n# O(n): ", is_const);
 	else
 		printf("NEGATIVE\n# O(n): ");
 	if (ft_is_linear(execution_data, max, max_ref, max_size))
-		printf("POSITIVE\n# O(nlogn): ");
+		printf("POSITIVE%s\n# O(nlogn): ", is_const);
 	else
 		printf("NEGATIVE\n# O(nlogn): ");
 	if (ft_is_linearithmic(execution_data, max, max_ref, max_size))
-		printf("POSITIVE\n# O(n^2): "); // See for n^x, instead.
+		printf("POSITIVE%s\n# O(n^2): ", is_const);
 	else
 		printf("NEGATIVE\n# O(n^2): ");
 	if (ft_is_quadratic(execution_data, max, max_ref, max_size))
-		printf("POSITIVE\n# O(2^n): ");
+		printf("POSITIVE%s\n# O(2^n): ", is_const);
 	else
 		printf("NEGATIVE\n# O(2^n): ");
 	if (ft_is_exponential(execution_data, max, max_ref, max_size, min_ref, min_size))
-		printf("POSITIVE\n# O(n!): ");
+		printf("POSITIVE%s\n# O(n!): ", is_const);
 	else
 		printf("NEGATIVE\n# O(n!): ");
 	if (ft_is_factorial(execution_data, max, max_ref, max_size))
-		printf("POSITIVE\n");
+		printf("POSITIVE%s\n", is_const);
 	else
 		printf("NEGATIVE\n");
 
