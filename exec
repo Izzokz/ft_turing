@@ -1,0 +1,27 @@
+#!/bin/bash
+
+compilation_ft()
+{
+    g++ -std=c++20 main.cpp
+    exit 0
+}
+
+
+clean_ft()
+{
+    rm a.out
+    exit 0
+}
+
+if test $# -eq 0 
+then
+    compilation_ft
+elif test $# -gt 1
+then
+#    echo "Too many arguments"
+    exit 2
+fi
+
+if [ "$1" == clean ]; then
+    clean_ft
+fi

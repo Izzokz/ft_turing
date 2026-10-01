@@ -1,167 +1,63 @@
-#include "include/err_msg.h"
-#include "json.hpp" // C++11 | -std=c++11
-#include <fstream>  // ifstream
-#include <sstream>  // stringstream
-#include <iostream> // cout, endl
-#include <iomanip>  // ws
-#include <map>      // map
-#include <ranges> // ranges
-#include <numeric>
-#include <string>
-using namespace std;
-using json = nlohmann::json;
+#include "main.hpp"
+#include <vector>
+#include <unordered_map>
 
-# define INPUT_INVALID_BLANK 1
-# define INPUT_INVALID_UNKNOWN 2
+enum class Action {
+    LEFT,
+    RIGHT
+};
 
-# define EMPTY_KEY(key) ("MISSING KEY " + std::string(key))
+struct Transition {
+    char read;
+    std::string to_state;
+    char write;
+    Action action;
+};
 
-// # define ERROR_MESSAGE(err) ("ERR[" + std::string(err) + "]")
-// -Werror -Wall -Wextra
-// g++ -std=c++20 main.cpp
+struct Machine {
+    std::string name;
+    std::vector<std::string> alphabet;
+    std::string blank;
+    std::vector<std::string> states;
+    std::string initial;
+    std::vector<std::string> finals;
+    std::unordered_map<std::string, std::vector<Transition>> transitions;
+};
 
-
-char	ft_sequals(const char *s1, const char *s2)
+std::string get_name(const std::optional<json>& j)
 {
-	int	i;
-
-	if (!s1 || !s2)
-		return (0);
-	i = -1;
-	while (*(s1 + ++i) || *(s2 + i))
-		if (*(s1 + i) != *(s2 + i))
-			break ;
-	return (*(s1 + i) == *(s2 + i));
+	return j->at("name").get<std::string>();
 }
 
-std::string ft_print_err(const std::string& err, const std::string* i)
+std::vector<std::string> get_alphabet(const std::optional<json>& j)
 {
-    if (i == nullptr)
-        return "ERR[" + err + "]";
-    return "ERR[" + err + "](" + *i + ")";
+	const auto& alphabet = j->at("alphabet");
+
+	// cout << ;
 }
+// std::string get_blank(const std::optional<json>& j);
+// std::vector<std::string> get_states(const std::optional<json>& j);
+// std::string get_initial(const std::optional<json>& j);
+// std::vector<std::string> get_finals(const std::optional<json>& j);
+// std::unordered_map<std::string, std::vector<Transition>> get_transitions(const std::optional<json>& j);
 
-void	ft_print_help(void)
+
+Machine set_machine(const std::optional<json>& j)
 {
-	std::cout << "usage: ft_turing [-h] jsonfile input\n\npositional arguments:\n\tjsonfile\t\t\tjson description of the machine\n\tinput\t\t\t\tinput of the machine\n\noptional arguments:\n\t-h, --help\t\t\tshow this help message and exit\n";
-    exit(0);
-}
-
-std::string remove_leading_whitespace(const std::string& line)
-{
-    auto first = line.find_first_not_of(" \t");
-
-    return first == std::string::npos
-        ? ""
-        : line.substr(first);
-}
-
-std::string extract_file(const std::string& file_name)
-{
-    std::ifstream file(file_name);
-
-    std::string result;
-
-    for (const auto& line : std::ranges::istream_view<std::string>(file))
-        result += remove_leading_whitespace(line);
-
-    return result;
-}
-
-std::optional<json> parse_json(const std::string& input)
-{
-    try {
-        return json::parse(input);
-    } catch (const json::parse_error& e) {
-        return std::nullopt;
-    }
+    return Machine{
+		.name = get_name(j),
+		.alphabet = get_alphabet(j)
+		// .blank = get_blank(j),
+		// .states = get_states(j),
+		// .initial = get_initial(j),
+		// .finals = get_finals(j),
+		// .transitions = get_transitions(j)
+	};
 }
 
 std::string print_machine_description()
 {
 	return "PLACEHOLDER";
-}
-
-
-std::optional<std::string> check_required_keys(const std::optional<json>& j)
-{
-	const std::array<std::string, 7> required_keys = {
-        "name",
-        "alphabet",
-        "blank",
-        "states",
-        "initial",
-        "finals",
-        "transitions"
-    };
-
-    for (const auto& key : required_keys)
-    {
-		if (!j->contains(key))
-			return EMPTY_KEY(key);
-	}
-
-}
-
-// std::optional<std::string> check_types(const std::optional<json>& j)
-// {
-
-// }
-
-// std::optional<std::string> check_value(const std::optional<json>& j)
-// {
-
-// }
-
-// std::optional<std::string> check_alphabet(const json& j);
-// std::optional<std::string> check_states(const json& j);
-// std::optional<std::string> check_transitions(const json& j);
-
-/*if (!j->at("name").is_string() ||
-    j->at("name").get<std::string>().find_first_not_of(" \t\n\r") == std::string::npos)
-{
-    return "NAME IS EMPTY";
-
-check_required_keys()
-    ├── Does "name" exist?          ✓
-    ├── Does "alphabet" exist?      ✓
-    └── Does "transitions" exist?   ✓
-
-check_types()
-    ├── Is "name" a string?         ✓
-    ├── Is "alphabet" an array?     ✓
-    └── Is "transitions" an object? ✓
-
-check_values()
-    ├── Is "name" non-empty?        ✓
-    ├── Is blank in alphabet?       ✓
-    └── Is initial in states?       ✓
-}*/
-
-
-std::optional<std::string> check_json(const std::optional<json>& j)
-{
-	if (!j)
-        return "JSON is empty";
-
-	if (auto error = check_required_keys(*j))
-        return error;
-
-    // if (auto error = check_types(*j))
-    //     return error;
-
-    // if (auto error = check_alphabet(*j))
-    //     return error;
-
-    // if (auto error = check_states(*j))
-    //     return error;
-
-    // if (auto error = check_transitions(*j))
-    //     return error;
-
-	//check
-
-    return std::nullopt;
 }
 
 int main(int ac, char **av)
@@ -186,8 +82,7 @@ int main(int ac, char **av)
 		auto error = check_json(j);
 		if (error)
 			{ cout << ft_print_err(*error, nullptr) << endl; return 1; }
-		cout  << "HERE OUTPUT : " << j->at("name").get<std::string>() << endl;
-		// struct conf
+        Machine machine = set_machine(j);
 	}
 	else 
 		{ cout << ft_print_err(INVALID_JSON_ERR, nullptr); return 1; }
@@ -199,7 +94,6 @@ int main(int ac, char **av)
 	//print input
 }
 
-
 // J.contains
 // auto blank = J.find("blank");
 // cout << *blank;
@@ -208,35 +102,7 @@ int main(int ac, char **av)
 // json J = json::parse(file_content);
 
 /*
-#include <string>
-#include <vector>
-#include <unordered_map>
 
-enum class Action {
-    LEFT,
-    RIGHT
-};
-
-struct Transition {
-    char read;
-    std::string to_state;
-    char write;
-    Action action;
-};
-
-struct Machine {
-    std::string name;
-    std::vector<std::string> alphabet;
-    std::string blank;
-    std::vector<std::string> states;
-    std::string initial;
-    std::vector<std::string> finals;
-
-    std::unordered_map<
-        std::string,
-        std::vector<Transition>
-    > transitions;
-};
 
 
 bool is_final(const Machine& machine, const std::string& state)
