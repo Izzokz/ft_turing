@@ -7,10 +7,13 @@
 #include <iostream> // cout, endl
 #include <iomanip>  // ws
 #include <map>      // map
-#include <ranges> // ranges
+#include <ranges>   // ranges
 #include <numeric>
 #include <string>
 #include <unordered_set>
+#include <vector>
+#include <unordered_map>
+
 using namespace std;
 using json = nlohmann::json;
 
@@ -20,6 +23,28 @@ using json = nlohmann::json;
 # define EMPTY_KEY(key) ("MISSING KEY " + std::string(key))
 # define EMPTY_CONTENT(key) ("MISSING CONTENT " + std::string(key))
 # define WRONG_TYPE(key, type) ("WRONG TYPE " + std::string(key) + std::string(type))
+
+enum class Action {
+    LEFT,
+    RIGHT
+};
+
+struct Transition {
+    char read;
+    std::string to_state;
+    char write;
+    Action action;
+};
+
+struct Machine {
+    std::string name;
+    std::vector<std::string> alphabet;
+    std::string blank;
+    std::vector<std::string> states;
+    std::string initial;
+    std::vector<std::string> finals;
+    std::unordered_map<std::string, std::vector<Transition>> transitions;
+};
 
 // -Werror -Wall -Wextra
 // g++ -std=c++20 main.cpp
@@ -281,4 +306,104 @@ std::optional<std::string> check_json(const std::optional<json>& j)
         return error;
 
     return std::nullopt;
+}
+
+std::string get_name(const std::optional<json>& j)
+{
+	return j->at("name").get<std::string>();
+}
+
+std::vector<std::string> get_alphabet(const std::optional<json>& j)
+{
+	const auto& alphabet = j->at("alphabet");
+	std::vector<std::string> r_alphabet;
+	r_alphabet.reserve(alphabet.size());
+	for (const auto& alpha : alphabet)
+		r_alphabet.emplace_back(alpha.get<std::string>());
+	return r_alphabet;
+}
+
+std::string get_blank(const std::optional<json>& j)
+{
+	return j->at("blank").get<std::string>();
+}
+
+std::vector<std::string> get_states(const std::optional<json>& j)
+{
+	const auto& states = j->at("states");
+	std::vector<std::string	> r_states;
+	r_states.reserve(states.size());
+	for (const auto& state : states)
+		r_states.emplace_back(state.get<std::string>());
+	return r_states;
+}
+
+std::string get_initial(const std::optional<json>& j)
+{
+	return j->at("initial").get<std::string>();
+}
+
+std::vector<std::string> get_finals(const std::optional<json>& j)
+{
+	const auto& finals = j->at("finals");
+	std::vector<std::string> r_finals;
+	r_finals.reserve(finals.size());
+	for (const auto& final : finals)
+		r_finals.emplace_back(final.get<std::string>());
+	return r_finals;
+}
+
+Action get_action(const json& j)
+{
+    if (j["action"] == "LEFT")
+        return Action::LEFT;
+    return Action::RIGHT;
+}
+
+Transition get_transition(const json& j)
+{
+    return Transition{
+        .read = j["read"].get<std::string>()[0],
+        .to_state = j["to_state"].get<std::string>(),
+        .write = j["write"].get<std::string>()[0],
+        .action = get_action(j)
+    };
+}
+
+std::vector<Transition> get_transition_list(const json& j)
+{
+    std::vector<Transition> result;
+
+    std::transform(
+        j.begin(),
+        j.end(),
+        std::back_inserter(result),
+        get_transition
+    );
+
+    return result;
+}
+
+std::unordered_map<std::string, std::vector<Transition>>
+get_transitions(const std::optional<json>& j)
+{
+    std::unordered_map<std::string, std::vector<Transition>> result;
+
+    for (const auto& [state, transitions] : (*j)["transitions"].items())
+        result.emplace(state, get_transition_list(transitions));
+
+    return result;
+}
+
+Machine set_machine(const std::optional<json>& j)
+{
+    return Machine{
+		.name = get_name(j),
+		.alphabet = get_alphabet(j),
+		.blank = get_blank(j),
+		.states = get_states(j),
+		.initial = get_initial(j),
+		.finals = get_finals(j),
+		.transitions = get_transitions(j)
+	};
 }

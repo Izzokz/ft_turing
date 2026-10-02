@@ -1,104 +1,78 @@
 #include "main.hpp"
-#include <vector>
-#include <unordered_map>
 
-enum class Action {
-    LEFT,
-    RIGHT
-};
-
-struct Transition {
-    char read;
-    std::string to_state;
-    char write;
-    Action action;
-};
-
-struct Machine {
-    std::string name;
-    std::vector<std::string> alphabet;
-    std::string blank;
-    std::vector<std::string> states;
-    std::string initial;
-    std::vector<std::string> finals;
-    std::unordered_map<std::string, std::vector<Transition>> transitions;
-};
-
-std::string get_name(const std::optional<json>& j)
+std::string print_name(const std::string& name)
 {
-	return j->at("name").get<std::string>();
+	return "####\n##" + name + "\n####";
 }
 
-std::vector<std::string> get_alphabet(const std::optional<json>& j)
+std::string print_alphabet(const std::vector<std::string>& alphabet)
 {
-	const auto& alphabet = j->at("alphabet");
-	std::vector<std::string> r_alphabet;
-	r_alphabet.reserve(alphabet.size());
-	for (const auto& alpha : alphabet)
-		r_alphabet.emplace_back(alpha.get<std::string>());
-	return r_alphabet;
+    std::string text = "\n# Alphabet: [";
+
+    for (size_t i = 0; i != alphabet.size(); ++i)
+    {
+        if (i != 0)
+            text += ", ";
+        text += alphabet[i];
+    }
+    return text + "]";
 }
 
-std::string get_blank(const std::optional<json>& j)
+std::string print_states(const std::vector<std::string>& states)
 {
-	return j->at("blank").get<std::string>();
+	std::string text = "\n# States: [";
+
+	for (size_t i = 0; i != states.size(); ++i)
+    {
+        if (i != 0)
+            text += ", ";
+        text += states[i];
+    }
+	return text + "]";
 }
 
-std::vector<std::string> get_states(const std::optional<json>& j)
+std::string print_intial(const std::string& initial)
 {
-	const auto& states = j->at("states");
-	std::vector<std::string	> r_states;
-	r_states.reserve(states.size());
-	for (const auto& state : states)
-		r_states.emplace_back(state.get<std::string>());
-	return r_states;
+	return "\n# Initial: " + initial;
 }
 
-std::string get_initial(const std::optional<json>& j)
+std::string print_finals(const std::vector<std::string>& finals)
 {
-	return j->at("initial").get<std::string>();
+	std::string text = "\n# Finals: [";
+	for (size_t i = 0; i != finals.size(); ++i)
+    {
+        if (i != 0)
+            text += ", ";
+        text += finals[i];
+    }
+	return text + "]";
 }
 
-std::vector<std::string> get_finals(const std::optional<json>& j)
+std::string print_transitions(const std::unordered_map<std::string, std::vector<Transition>>& transitions)
 {
-	const auto& finals = j->at("finals");
-	std::vector<std::string> r_finals;
-	r_finals.reserve(finals.size());
-	for (const auto& final : finals)
-		r_finals.emplace_back(final.get<std::string>());
-	return r_finals;
-}
-/*    
-char read;
-std::string to_state;
-char write;
-Action action;
-*/
+	std::string text = "]\n# Transitions:\n";
 
-std::unordered_map<std::string, std::vector<Transition>> get_transitions(const std::optional<json>& j)
-{
-	//char read;
-    // std::string to_state;
-    // char write;
-    // Action action;
+	// for (int i = 0; i < g_max_I; ++i)
+	// {
+	// 	if (!*(g_transet + i))
+	// 		continue ;
+	// 	for (int j = 0; *((int **)*(g_transet + i) + j); ++j)
+	// 		printf("%s[%c] => %s; writes %c; goes %c\n", *(g_conf.states + i), **((int **)*(g_transet + i) + j), *(g_conf.states + *(*((int **)*(g_transet + i) + j) + 1)), *(*((int **)*(g_transet + i) + j) + 2), *(*((int **)*(g_transet + i) + j) + 3));
+	// }
+
+	return text + "\n";
 }
 
-Machine set_machine(const std::optional<json>& j)
+std::string print_machine_description(Machine machine)
 {
-    return Machine{
-		.name = get_name(j),
-		.alphabet = get_alphabet(j),
-		.blank = get_blank(j),
-		.states = get_states(j),
-		.initial = get_initial(j),
-		.finals = get_finals(j),
-		.transitions = get_transitions(j)
-	};
-}
-
-std::string print_machine_description()
-{
-	return "PLACEHOLDER";
+	std::string text;
+	text = print_name(machine.name);
+	text += print_alphabet(machine.alphabet);
+	text += print_states(machine.states);
+	text += print_intial(machine.initial);
+	text += print_finals(machine.finals);
+	text += print_transitions(machine.transitions);
+	return text;
 }
 
 int main(int ac, char **av)
@@ -108,28 +82,25 @@ int main(int ac, char **av)
 	if (ac == 2)
 	{
 		if (ft_sequals(av[1], "--help") || ft_sequals(av[1], "-h"))
-			ft_print_help();
+			{ ft_print_help(); return 0; }
 		else
-			cout << ft_print_err(NOT_ENOUGH_ARG_ERR, nullptr);
-		return 1;
+			{ cout << ft_print_err(NOT_ENOUGH_ARG_ERR, nullptr); return 1; }
 	}
 	string file_content = extract_file(av[1]);
 	if(file_content.empty())
 		{ cout << ft_print_err(READ_FILE_ERR, nullptr); return 1; }
-
 	if (auto j = parse_json(file_content))
 	{
 		auto error = check_json(j);
 		if (error)
 			{ cout << ft_print_err(*error, nullptr) << endl; return 1; }
-        Machine machine = set_machine(j);
+		Machine machine = set_machine(j);
+		cout << print_machine_description(machine);
 	}
 	else
 		{ cout << ft_print_err(INVALID_JSON_ERR, nullptr); return 1; }
-
 	//set transitions
 	
-	// cout << print_machine_description();
 	//check input
 	//print input
 }
@@ -143,18 +114,24 @@ int main(int ac, char **av)
 
 /*
 
-
-
-bool is_final(const Machine& machine, const std::string& state)
+switch (transition.action)
 {
-    return std::find(
-        machine.finals.begin(),
-        machine.finals.end(),
-        state
-    ) != machine.finals.end();
+    case Action::LEFT:
+        // move left
+        break;
+
+    case Action::RIGHT:
+        // move right
+        break;
 }
 
-is_final(machine, state); // function operating on data
-
+if (transition.action == Action::RIGHT)
+{
+    // move right
+}
+else if (transition.action == Action::LEFT)
+{
+    // move left
+}
 
 */
