@@ -22,8 +22,7 @@ L = LEFT
 x = 1
 z = .
 
-b:[1z+=],s:[reaH],t:{r:[d1orw1cI,d+orw1cI,d=oew=cL],
-e:[d1oawzcI],a:[d=oHwzcL]}11+111= 
+b:[1z+=],s:[reaH],t:{r:[d1orw1cI,d+orw1cI,d=oew=cL],e:[d1oawzcI],a:[d=oHwzcL]}11+111= 
 > xxxxxyz > 11111..
 
 ./ft_turing resource/json_machine_description/turing.json "b:[1z+=],s:[reaH],t:{r:[d1orw1cI,d+orw1cI,d=oew=cL],e:[d1oawzcI],a:[d=oHwzcL]}11+111="

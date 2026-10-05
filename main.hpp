@@ -507,7 +507,7 @@ std::optional<std::string> check_input(const std::string& input, const std::vect
     for (std::size_t i = 0; i < input.size(); ++i)
     {
         std::string c(1, input[i]);
-
+        //besoin de gerer les blanks
         if (std::find(alphabet.begin(), alphabet.end(), c) == alphabet.end())
             return INVALID_INPUT(c);
     }
