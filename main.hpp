@@ -23,6 +23,8 @@ using json = nlohmann::json;
 # define EMPTY_KEY(key) ("MISSING KEY " + std::string(key))
 # define EMPTY_CONTENT(key) ("MISSING CONTENT " + std::string(key))
 # define WRONG_TYPE(key, type) ("WRONG TYPE " + std::string(key) + std::string(type))
+# define INVALID_INPUT(c) std::string(c) +  " is Invalid (One character is not in the alphabet)."
+
 
 enum class Action {
     LEFT,
@@ -407,3 +409,108 @@ Machine set_machine(const std::optional<json>& j)
 		.transitions = get_transitions(j)
 	};
 }
+
+std::string print_name(const std::string& name)
+{
+	return "####\n##" + name + "\n####";
+}
+
+std::string print_alphabet(const std::vector<std::string>& alphabet)
+{
+    std::string text = "\n# Alphabet: [";
+
+    for (size_t i = 0; i != alphabet.size(); ++i)
+    {
+        if (i != 0)
+            text += ", ";
+        text += alphabet[i];
+    }
+    return text + "]";
+}
+
+std::string print_states(const std::vector<std::string>& states)
+{
+	std::string text = "\n# States: [";
+
+	for (size_t i = 0; i != states.size(); ++i)
+    {
+        if (i != 0)
+            text += ", ";
+        text += states[i];
+    }
+	return text + "]";
+}
+
+std::string print_intial(const std::string& initial)
+{
+	return "\n# Initial: " + initial;
+}
+
+std::string print_finals(const std::vector<std::string>& finals)
+{
+	std::string text = "\n# Finals: [";
+	for (size_t i = 0; i != finals.size(); ++i)
+    {
+        if (i != 0)
+            text += ", ";
+        text += finals[i];
+    }
+	return text;
+}
+
+const char* action_to_string(Action action)
+{
+    switch (action)
+    {
+        case Action::LEFT:  return "L";
+        case Action::RIGHT: return "R";
+	}
+    return "?";
+}
+
+std::string print_transitions(const std::unordered_map<std::string, std::vector<Transition>>& transitions)
+{
+	std::string text = "]\n# Transitions:\n";
+	for (const auto& [state, state_transitions] : transitions)
+    {
+        for (const auto& transition : state_transitions)
+        {
+            text += state;
+            text += "[";
+            text += transition.read;
+            text += "] => ";
+            text += transition.to_state;
+            text += "; writes ";
+            text += transition.write;
+            text += "; goes ";
+        	text += action_to_string(transition.action);
+            text += "\n";
+        }
+    }
+	return text + "\n";
+}
+
+std::string print_machine_description(Machine machine)
+{
+	std::string text;
+	text = print_name(machine.name);
+	text += print_alphabet(machine.alphabet);
+	text += print_states(machine.states);
+	text += print_intial(machine.initial);
+	text += print_finals(machine.finals);
+	text += print_transitions(machine.transitions);
+	return text;
+}
+
+std::optional<std::string> check_input(const std::string& input, const std::vector<std::string>& alphabet)
+{
+    for (std::size_t i = 0; i < input.size(); ++i)
+    {
+        std::string c(1, input[i]);
+
+        if (std::find(alphabet.begin(), alphabet.end(), c) == alphabet.end())
+            return INVALID_INPUT(c);
+    }
+	return std::nullopt;
+}
+
