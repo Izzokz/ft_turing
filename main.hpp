@@ -74,7 +74,6 @@ std::string ft_print_err(const std::string& err, const std::string* i)
 void	ft_print_help(void)
 {
 	std::cout << "usage: ft_turing [-h] jsonfile input\n\npositional arguments:\n\tjsonfile\t\t\tjson description of the machine\n\tinput\t\t\t\tinput of the machine\n\noptional arguments:\n\t-h, --help\t\t\tshow this help message and exit\n";
-    exit(0);
 }
 
 std::string remove_leading_whitespace(const std::string& line)
@@ -514,3 +513,114 @@ std::optional<std::string> check_input(const std::string& input, const std::vect
 	return std::nullopt;
 }
 
+std::string first_part(const std::string &input, int pos, const std::string& blank)
+{
+	std::string text;
+	if (pos < static_cast<int>(input.size()))
+	{
+		text = "<" + input.substr(0, pos)
+			+ "\033[1;31m"
+			+ input[pos]
+			+ "\033[0m"
+			+ input.substr(pos + 1);
+	}
+	else
+	{
+		text = input;
+
+		while (static_cast<int>(text.size()) < pos)
+			text += blank;
+
+		text += "\033[1;31mX\033[0m";
+	}
+    return text + ">";
+}
+
+std::string print_transition(char c, const std::string& states, const std::unordered_map<std::string, std::vector<Transition>>& transitions)
+{
+	std::string text;
+
+	text = " - ";
+	for (const auto& [state, state_transitions] : transitions)
+    {
+		if (state != states)
+            continue;
+
+        for (const auto& transition : state_transitions)
+        {
+			if (transition.read != c)
+                continue;
+            text += state;
+            text += "[";
+            text += transition.read;
+            text += "] => ";
+            text += transition.to_state;
+            text += "; writes ";
+            text += transition.write;
+            text += "; goes ";
+        	text += action_to_string(transition.action);
+            text += "\n";
+        }
+    }
+	return text;
+}
+
+char get_read(const std::string& input, int pos, const std::string& blank)
+{
+	if (pos < 0 || pos >= static_cast<int>(input.size()))
+		return blank[0];
+	return input[pos];
+}
+
+std::string print_input(const std::string &input, int pos, const std::string& state, const Machine& machine)
+{
+	std::string text;
+
+	text = first_part(input, pos, machine.blank);
+	text += print_transition(get_read(input, pos, machine.blank), state, machine.transitions);
+	return text;
+}
+
+Action check_action(char c, const std::string &states, const std::unordered_map<std::string, std::vector<Transition>>& transitions)
+{
+	for (const auto& [state, state_transitions] : transitions)
+    {
+		if (state != states)
+            continue;
+
+        for (const auto& transition : state_transitions)
+        {
+			if (transition.read != c)
+                continue;
+			return transition.action;
+		}
+	}
+	return Action::RIGHT;
+}
+
+std::string change_state(char c, const std::string &states, const std::unordered_map<std::string, std::vector<Transition>>& transitions)
+{
+	for (const auto& [state, state_transitions] : transitions)
+    {
+		if (state != states)
+            continue;
+
+        for (const auto& transition : state_transitions)
+        {
+			if (transition.read != c)
+                continue;
+			return transition.to_state;
+		}
+	}
+	return states;
+}
+
+int change_pos(int pos, Action action)
+{
+	switch (action)
+    {
+		case Action::LEFT:  return pos - 1;
+        case Action::RIGHT: return pos + 1;
+	}
+	return 1;
+}

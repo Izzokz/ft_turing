@@ -1,9 +1,101 @@
 #include "main.hpp"
 
-std::string print_output(const std::string& input, Machine machine)
+char check_write(char c, const std::string &states, const std::unordered_map<std::string, std::vector<Transition>>& transitions)
 {
-	
+	for (const auto& [state, state_transitions] : transitions)
+    {
+		if (state != states)
+            continue;
+
+        for (const auto& transition : state_transitions)
+        {
+			if (transition.read != c)
+                continue;
+			return transition.write;
+		}
+	}
+	return c;
 }
+
+std::string change_input(const std::string& input, int pos, char write, const Machine& machine)
+{
+    std::string new_input = input;
+
+    if (pos < 0)
+    {
+        new_input.insert(0, machine.blank);
+        pos = 0;
+    }
+
+    while (static_cast<int>(new_input.size()) <= pos)
+        new_input += machine.blank;
+
+    new_input[pos] = write;
+
+    return new_input;
+}
+
+
+const Transition* find_transition(char c, const std::string& state, const std::unordered_map<std::string, std::vector<Transition>>& transitions)
+{
+    for (const auto& [transition_state, state_transitions] : transitions)
+    {
+        if (transition_state != state)
+            continue;
+
+        for (const auto& transition : state_transitions)
+        {
+            if (transition.read == c)
+                return &transition;
+        }
+    }
+
+    return nullptr;
+}
+
+std::string print_end(const std::string &input, int pos, const std::string& state, const Machine& machine)
+{
+	std::string text;
+
+	text = first_part(input, pos, machine.blank);
+	text += " - " + state;
+	return text + "\n";
+}
+
+std::string print_output(const std::string& input, const Machine& machine)
+{
+	int pos = 0;
+	std::string text;
+	std::string current_input = input;
+	std::string state = machine.initial;
+	
+	text += "\"" + input + "\"\n";
+	while(std::find(machine.finals.begin(), machine.finals.end(), state) == machine.finals.end())
+	{
+        text += print_input(current_input, pos, state, machine);
+        const char read = get_read(current_input, pos, machine.blank);
+        const Transition* transition = find_transition(read, state, machine.transitions);
+        if (transition == nullptr)
+            break;
+        current_input = change_input(current_input, pos, check_write(get_read(current_input, pos, machine.blank), state, machine.transitions), machine);
+        pos = change_pos(pos, transition->action);
+        state = transition->to_state;
+	}
+	text += print_end(current_input, pos, state, machine);
+	return text;
+}
+
+
+/*"00"
+<00> - replaceleft[0] => scaneright; writes x; goes R
+<x0> - scaneright[0] => scaneright; writes 0; goes R
+x0X> - scaneright[.] => replaceright; writes .; goes L
+<x0.> - replaceright[0] => scanleft; writes x; goes L
+<xx.> - scanleft[x] => replaceleft; writes x; goes R
+<xx.> - replaceleft[x] => answer_y; writes x; goes R
+<xx.> - answer_y[.] => HALT; writes y; goes L
+<xxy> - HALT
+*/
 
 int main(int ac, char **av)
 {
