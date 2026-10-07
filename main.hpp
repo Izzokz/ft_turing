@@ -87,13 +87,13 @@ std::string extract_file(const std::string& file_name)
 {
     std::ifstream file(file_name);
 
-    std::string result;
+    return {
+        std::istreambuf_iterator<char>{file},
+        std::istreambuf_iterator<char>{}
+    };
 
-    for (const auto& line : std::ranges::istream_view<std::string>(file))
-        result += remove_leading_whitespace(line);
-
-    return result;
 }
+
 
 std::optional<json> parse_json(const std::string& input)
 {
@@ -128,7 +128,8 @@ std::optional<std::string> check_empty(const std::optional<json>& j)
 
         if (value.is_null())
             return EMPTY_CONTENT(key);
-
+        if(key == "blank")
+            cout << value << endl;
         if (value.is_string() && value.get<std::string>().empty())
             return EMPTY_CONTENT(key);
 
@@ -326,6 +327,11 @@ std::vector<std::string> get_alphabet(const std::optional<json>& j)
 
 std::string get_blank(const std::optional<json>& j)
 {
+    //check whitespace 
+    /*
+        ./a.out resource/json_machine_description/go_back_write_a.json "a" 
+            ERR[MISSING CONTENT blank]
+    */
 	return j->at("blank").get<std::string>();
 }
 
@@ -515,23 +521,28 @@ std::optional<std::string> check_input(const std::string& input, const std::vect
 
 std::string first_part(const std::string &input, int pos, const std::string& blank)
 {
-	std::string text;
-	if (pos < static_cast<int>(input.size()))
+	std::string text = "<";
+    if (pos < 0)
 	{
-		text = "<" + input.substr(0, pos)
-			+ "\033[1;31m"
-			+ input[pos]
-			+ "\033[0m"
-			+ input.substr(pos + 1);
-	}
+        text += "\033[41m";
+		text += blank;
+		text += "\033[0m";
+        text += input;
+    }
+    else if(pos < input.size())
+    {
+        text += input.substr(0, pos);
+        text += "\033[41m";
+		text += input[pos];
+		text += "\033[0m";
+		text += input.substr(pos + 1);
+    }
 	else
 	{
-		text = input;
-
-		while (static_cast<int>(text.size()) < pos)
-			text += blank;
-
-		text += "\033[1;31mX\033[0m";
+		text += input;
+        text += "\033[41m";
+		text += blank;
+		text += "\033[0m";
 	}
     return text + ">";
 }
@@ -577,8 +588,8 @@ std::string print_input(const std::string &input, int pos, const std::string& st
 	std::string text;
 
 	text = first_part(input, pos, machine.blank);
-	text += print_transition(get_read(input, pos, machine.blank), state, machine.transitions);
-	return text;
+    text += print_transition(get_read(input, pos, machine.blank), state, machine.transitions);
+    return text;
 }
 
 Action check_action(char c, const std::string &states, const std::unordered_map<std::string, std::vector<Transition>>& transitions)
@@ -623,4 +634,87 @@ int change_pos(int pos, Action action)
         case Action::RIGHT: return pos + 1;
 	}
 	return 1;
+}
+
+char check_write(char c, const std::string &states, const std::unordered_map<std::string, std::vector<Transition>>& transitions)
+{
+	for (const auto& [state, state_transitions] : transitions)
+    {
+		if (state != states)
+            continue;
+
+        for (const auto& transition : state_transitions)
+        {
+			if (transition.read != c)
+                continue;
+			return transition.write;
+		}
+	}
+	return c;
+}
+
+std::string change_input(const std::string& input, int pos, char write, const Machine& machine)
+{
+    std::string new_input = input;
+
+    if (pos < 0)
+    {
+		new_input.insert(0, machine.blank);
+        pos = 0;
+    }
+    if (new_input.size() <= pos)
+		new_input += machine.blank;
+
+	new_input[pos] = write;
+
+    return new_input;
+}
+
+const Transition* find_transition(char c, const std::string& state, const std::unordered_map<std::string, std::vector<Transition>>& transitions)
+{
+    for (const auto& [transition_state, state_transitions] : transitions)
+    {
+        if (transition_state != state)
+            continue;
+
+        for (const auto& transition : state_transitions)
+        {
+            if (transition.read == c)
+                return &transition;
+        }
+    }
+
+    return nullptr;
+}
+
+std::string print_end(const std::string &input, int pos, const std::string& state, const Machine& machine)
+{
+	std::string text;
+
+	text = first_part(input, pos, machine.blank);
+	text += " - " + state;
+	return text + "\n";
+}
+
+std::string print_output(const std::string& input, const Machine& machine)
+{
+	int pos = 0;
+	std::string text;
+	std::string current_input = input;
+	std::string state = machine.initial;
+	
+	text += "\"" + input + "\"\n";
+	while(std::find(machine.finals.begin(), machine.finals.end(), state) == machine.finals.end())
+	{
+        text += print_input(current_input, pos, state, machine);
+        const char read = get_read(current_input, pos, machine.blank);
+        const Transition* transition = find_transition(read, state, machine.transitions);
+        if (transition == nullptr)
+            break;
+        current_input = change_input(current_input, pos, check_write(get_read(current_input, pos, machine.blank), state, machine.transitions), machine);
+		pos = change_pos(pos, transition->action);
+        state = transition->to_state;
+	}
+	text += print_end(current_input, pos, state, machine);
+	return text;
 }
