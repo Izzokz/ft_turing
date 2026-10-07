@@ -24,7 +24,7 @@ using json = nlohmann::json;
 # define EMPTY_CONTENT(key) ("MISSING CONTENT " + std::string(key))
 # define WRONG_TYPE(key, type) ("WRONG TYPE " + std::string(key) + std::string(type))
 # define INVALID_INPUT(c) std::string(c) +  " is Invalid (One character is not in the alphabet)."
-
+# define INVALID_INPUT_BLANK(c) std::string(c) +  " is Invalid(The input can't take blank)."
 
 enum class Action {
     LEFT,
@@ -48,12 +48,19 @@ struct Machine {
     std::unordered_map<std::string, std::vector<Transition>> transitions;
 };
 
+struct Configuration
+{
+    std::string input;
+    int pos;
+    std::string state;
+};
+
 // -Werror -Wall -Wextra
 // g++ -std=c++20 main.cpp
 
 char	ft_sequals(const char *s1, const char *s2)
 {
-	int	i;
+    int	i;
 
 	if (!s1 || !s2)
 		return (0);
@@ -69,7 +76,7 @@ std::string ft_print_err(const std::string& err, const std::string* i)
     if (i == nullptr)
         return "ERR[" + err + "]";
     return "ERR[" + err + "](" + *i + ")";
-}
+}   
 
 void	ft_print_help(void)
 {
@@ -94,7 +101,6 @@ std::string extract_file(const std::string& file_name)
 
 }
 
-
 std::optional<json> parse_json(const std::string& input)
 {
     try {
@@ -104,27 +110,27 @@ std::optional<json> parse_json(const std::string& input)
     }
 }
 
-std::optional<std::string> check_required_keys(const std::optional<json>& j)
+std::optional<std::string> check_required_keys(const json& j)
 {
 	const std::array<std::string, 7> required_keys = 
     { "name", "alphabet", "blank", "states", "initial", "finals", "transitions" };
 
     for (const auto& key : required_keys)
     {
-		if (!j->contains(key))
+		if (!j.contains(key))
 			return EMPTY_KEY(key);
 	}
     return std::nullopt;
 }
 
-std::optional<std::string> check_empty(const std::optional<json>& j)
+std::optional<std::string> check_empty(const json& j)
 {
 	const std::array<std::string, 7> required_keys = 
     { "name", "alphabet", "blank", "states", "initial", "finals", "transitions" };
 
     for (const auto& key : required_keys)
     {
-        const auto& value = j->at(key);
+        const auto& value = j.at(key);
 
         if (value.is_null())
             return EMPTY_CONTENT(key);
@@ -139,14 +145,14 @@ std::optional<std::string> check_empty(const std::optional<json>& j)
     return std::nullopt;
 }
 
-std::optional<std::string> check_types(const std::optional<json>& j)
+std::optional<std::string> check_types(const json& j)
 {
 	const std::array<std::string, 7> required_keys = 
     { "name", "alphabet", "blank", "states", "initial", "finals", "transitions" };
 
     for (const auto& key : required_keys)
     {
-        const auto& value = j->at(key);
+        const auto& value = j.at(key);
 
         if ((key == "name" || key == "blank" || key == "initial") && !value.is_string())
             return WRONG_TYPE(key, "string");
@@ -160,10 +166,10 @@ std::optional<std::string> check_types(const std::optional<json>& j)
     return std::nullopt;
 }
 
-std::optional<std::string> check_alphabet(const std::optional<json>& j)
+std::optional<std::string> check_alphabet(const json& j)
 {
-    const auto& alphabet = j->at("alphabet");
-    const auto& blank = j->at("blank");
+    const auto& alphabet = j.at("alphabet");
+    const auto& blank = j.at("blank");
     std::unordered_set<std::string> unique;
 
     if(!blank.is_string() || blank.size() != 1)
@@ -182,11 +188,11 @@ std::optional<std::string> check_alphabet(const std::optional<json>& j)
     return std::nullopt;
 }
 
-std::optional<std::string> check_states(const std::optional<json>& j)
+std::optional<std::string> check_states(const json& j)
 {
-    const auto& states = j->at("states");
-    const auto& initial = j->at("initial");
-    const auto& finals = j->at("finals");
+    const auto& states = j.at("states");
+    const auto& initial = j.at("initial");
+    const auto& finals = j.at("finals");
 
     if (std::find(states.begin(), states.end(), initial) == states.end())
         return JSON_INITIAL_NOT_IN_STATE_LIST_ERR;
@@ -198,10 +204,10 @@ std::optional<std::string> check_states(const std::optional<json>& j)
     return std::nullopt;
 }
 
-std::optional<std::string> check_transition_states(const std::optional<json>& j)
+std::optional<std::string> check_transition_states(const json& j)
 {
-    const auto& states = j->at("states");
-    const auto& transitions = j->at("transitions");
+    const auto& states = j.at("states");
+    const auto& transitions = j.at("transitions");
 
     for (const auto& [state, rules] : transitions.items())
     {
@@ -211,10 +217,10 @@ std::optional<std::string> check_transition_states(const std::optional<json>& j)
     return std::nullopt;
 }
 
-std::optional<std::string> check_transition_targets(const std::optional<json>& j)
+std::optional<std::string> check_transition_targets(const json& j)
 {
-    const auto& states = j->at("states");
-    const auto& transitions = j->at("transitions");
+    const auto& states = j.at("states");
+    const auto& transitions = j.at("transitions");
 
     for (const auto& [state, rules] : transitions.items())
     {
@@ -230,10 +236,10 @@ std::optional<std::string> check_transition_targets(const std::optional<json>& j
     return std::nullopt;
 }
 
-std::optional<std::string> check_transition_writes_read(const std::optional<json>& j)
+std::optional<std::string> check_transition_writes_read(const json& j)
 {
-    const auto& transitions = j->at("transitions");
-    const auto& alphabet = j->at("alphabet");
+    const auto& transitions = j.at("transitions");
+    const auto& alphabet = j.at("alphabet");
 
     for (const auto& [state, rules] : transitions.items())
     {
@@ -252,9 +258,9 @@ std::optional<std::string> check_transition_writes_read(const std::optional<json
     return std::nullopt;
 }
 
-std::optional<std::string> check_transition_actions(const std::optional<json>& j)
+std::optional<std::string> check_transition_actions(const json& j)
 {
-    const auto& transitions = j->at("transitions");
+    const auto& transitions = j.at("transitions");
     const std::array<std::string, 2> valid_actions = { "LEFT", "RIGHT" };
 
     for (const auto& [state, rules] : transitions.items())
@@ -270,54 +276,54 @@ std::optional<std::string> check_transition_actions(const std::optional<json>& j
     return std::nullopt;
 }
 
-std::optional<std::string> check_transitions(const std::optional<json>& j)
+std::optional<std::string> check_transitions(const json& j)
 {
-    if(auto error = check_transition_states(*j))
+    if(auto error = check_transition_states(j))
         return error;
-    if(auto error = check_transition_targets(*j))
+    if(auto error = check_transition_targets(j))
         return error;   
-    if(auto error = check_transition_writes_read(*j))
+    if(auto error = check_transition_writes_read(j))
         return error;
-    if(auto error = check_transition_actions(*j))
+    if(auto error = check_transition_actions(j))
         return error;
 
     return std::nullopt;
 }
 
-std::optional<std::string> check_json(const std::optional<json>& j)
+std::optional<std::string> check_json(const json& j)
 {
 	if (!j)
         return "JSON is empty";
 
-	if (auto error = check_required_keys(*j))
+	if (auto error = check_required_keys(j))
         return error;
 
-    if (auto error = check_empty(*j))
+    if (auto error = check_empty(j))
         return error;
 
-    if (auto error = check_types(*j))
+    if (auto error = check_types(j))
         return error;
 
-    if (auto error = check_alphabet(*j))
+    if (auto error = check_alphabet(j))
         return error;
 
-    if (auto error = check_states(*j))
+    if (auto error = check_states(j))
         return error;
 
-    if (auto error = check_transitions(*j))
+    if (auto error = check_transitions(j))
         return error;
 
     return std::nullopt;
 }
 
-std::string get_name(const std::optional<json>& j)
+std::string get_name(const json& j)
 {
-	return j->at("name").get<std::string>();
+	return j.at("name").get<std::string>();
 }
 
-std::vector<std::string> get_alphabet(const std::optional<json>& j)
+std::vector<std::string> get_alphabet(const json& j)
 {
-	const auto& alphabet = j->at("alphabet");
+	const auto& alphabet = j.at("alphabet");
 	std::vector<std::string> r_alphabet;
 	r_alphabet.reserve(alphabet.size());
 	for (const auto& alpha : alphabet)
@@ -325,19 +331,14 @@ std::vector<std::string> get_alphabet(const std::optional<json>& j)
 	return r_alphabet;
 }
 
-std::string get_blank(const std::optional<json>& j)
+std::string get_blank(const json& j)
 {
-    //check whitespace 
-    /*
-        ./a.out resource/json_machine_description/go_back_write_a.json "a" 
-            ERR[MISSING CONTENT blank]
-    */
-	return j->at("blank").get<std::string>();
+	return j.at("blank").get<std::string>();
 }
 
-std::vector<std::string> get_states(const std::optional<json>& j)
+std::vector<std::string> get_states(const json& j)
 {
-	const auto& states = j->at("states");
+	const auto& states = j.at("states");
 	std::vector<std::string	> r_states;
 	r_states.reserve(states.size());
 	for (const auto& state : states)
@@ -345,14 +346,14 @@ std::vector<std::string> get_states(const std::optional<json>& j)
 	return r_states;
 }
 
-std::string get_initial(const std::optional<json>& j)
+std::string get_initial(const json& j)
 {
-	return j->at("initial").get<std::string>();
+	return j.at("initial").get<std::string>();
 }
 
-std::vector<std::string> get_finals(const std::optional<json>& j)
+std::vector<std::string> get_finals(const json& j)
 {
-	const auto& finals = j->at("finals");
+	const auto& finals = j.at("finals");
 	std::vector<std::string> r_finals;
 	r_finals.reserve(finals.size());
 	for (const auto& final : finals)
@@ -370,9 +371,9 @@ Action get_action(const json& j)
 Transition get_transition(const json& j)
 {
     return Transition{
-        .read = j["read"].get<std::string>()[0],
-        .to_state = j["to_state"].get<std::string>(),
-        .write = j["write"].get<std::string>()[0],
+        .read = j.at("read").get<std::string>()[0],
+        .to_state = j.at("to_state").get<std::string>(),
+        .write = j.at("write").get<std::string>()[0],
         .action = get_action(j)
     };
 }
@@ -391,18 +392,17 @@ std::vector<Transition> get_transition_list(const json& j)
     return result;
 }
 
-std::unordered_map<std::string, std::vector<Transition>>
-get_transitions(const std::optional<json>& j)
+std::unordered_map<std::string, std::vector<Transition>> get_transitions(const json& j)
 {
     std::unordered_map<std::string, std::vector<Transition>> result;
 
-    for (const auto& [state, transitions] : (*j)["transitions"].items())
+    for (const auto& [state, transitions] : j["transitions"].items())
         result.emplace(state, get_transition_list(transitions));
 
     return result;
 }
 
-Machine set_machine(const std::optional<json>& j)
+Machine set_machine(const json& j)
 {
     return Machine{
 		.name = get_name(j),
@@ -463,7 +463,7 @@ std::string print_finals(const std::vector<std::string>& finals)
 	return text;
 }
 
-const char* action_to_string(Action action)
+const char* action_to_string(const Action& action)
 {
     switch (action)
     {
@@ -495,7 +495,7 @@ std::string print_transitions(const std::unordered_map<std::string, std::vector<
 	return text + "\n";
 }
 
-std::string print_machine_description(Machine machine)
+std::string print_machine_description(const Machine& machine)
 {
 	std::string text;
 	text = print_name(machine.name);
@@ -507,19 +507,20 @@ std::string print_machine_description(Machine machine)
 	return text;
 }
 
-std::optional<std::string> check_input(const std::string& input, const std::vector<std::string>& alphabet)
+std::optional<std::string> check_input(const std::string& input, const std::vector<std::string>& alphabet, const std::string& blank)
 {
     for (std::size_t i = 0; i < input.size(); ++i)
     {
         std::string c(1, input[i]);
-        //besoin de gerer les blanks
         if (std::find(alphabet.begin(), alphabet.end(), c) == alphabet.end())
             return INVALID_INPUT(c);
+        else if(input[i] == blank[0])
+            return INVALID_INPUT_BLANK(c);
     }
 	return std::nullopt;
 }
 
-std::string first_part(const std::string &input, int pos, const std::string& blank)
+std::string first_part(const std::string &input, const int& pos, const std::string& blank)
 {
 	std::string text = "<";
     if (pos < 0)
@@ -547,7 +548,7 @@ std::string first_part(const std::string &input, int pos, const std::string& bla
     return text + ">";
 }
 
-std::string print_transition(char c, const std::string& states, const std::unordered_map<std::string, std::vector<Transition>>& transitions)
+std::string print_transition(const char& c, const std::string& states, const std::unordered_map<std::string, std::vector<Transition>>& transitions)
 {
 	std::string text;
 
@@ -576,14 +577,14 @@ std::string print_transition(char c, const std::string& states, const std::unord
 	return text;
 }
 
-char get_read(const std::string& input, int pos, const std::string& blank)
+char get_read(const std::string& input, const int& pos, const std::string& blank)
 {
 	if (pos < 0 || pos >= static_cast<int>(input.size()))
 		return blank[0];
 	return input[pos];
 }
 
-std::string print_input(const std::string &input, int pos, const std::string& state, const Machine& machine)
+std::string print_input(const std::string &input, const int& pos, const std::string& state, const Machine& machine)
 {
 	std::string text;
 
@@ -592,102 +593,51 @@ std::string print_input(const std::string &input, int pos, const std::string& st
     return text;
 }
 
-Action check_action(char c, const std::string &states, const std::unordered_map<std::string, std::vector<Transition>>& transitions)
-{
-	for (const auto& [state, state_transitions] : transitions)
-    {
-		if (state != states)
-            continue;
-
-        for (const auto& transition : state_transitions)
-        {
-			if (transition.read != c)
-                continue;
-			return transition.action;
-		}
-	}
-	return Action::RIGHT;
-}
-
-std::string change_state(char c, const std::string &states, const std::unordered_map<std::string, std::vector<Transition>>& transitions)
-{
-	for (const auto& [state, state_transitions] : transitions)
-    {
-		if (state != states)
-            continue;
-
-        for (const auto& transition : state_transitions)
-        {
-			if (transition.read != c)
-                continue;
-			return transition.to_state;
-		}
-	}
-	return states;
-}
-
-int change_pos(int pos, Action action)
+int change_pos(const int& pos,const Action& action)
 {
 	switch (action)
     {
 		case Action::LEFT:  return pos - 1;
         case Action::RIGHT: return pos + 1;
 	}
-	return 1;
+	return 0;
 }
 
-char check_write(char c, const std::string &states, const std::unordered_map<std::string, std::vector<Transition>>& transitions)
+std::string change_input(const std::string& input, const int& pos, const char& write, const Machine& machine)
 {
-	for (const auto& [state, state_transitions] : transitions)
-    {
-		if (state != states)
-            continue;
-
-        for (const auto& transition : state_transitions)
-        {
-			if (transition.read != c)
-                continue;
-			return transition.write;
-		}
-	}
-	return c;
-}
-
-std::string change_input(const std::string& input, int pos, char write, const Machine& machine)
-{
-    std::string new_input = input;
-
     if (pos < 0)
     {
-		new_input.insert(0, machine.blank);
-        pos = 0;
+        auto new_input = machine.blank + input;
+        new_input[0] = write;
+        return new_input;
     }
-    if (new_input.size() <= pos)
-		new_input += machine.blank;
 
-	new_input[pos] = write;
+    if (pos >= input.size())
+    {
+        auto new_input = input + machine.blank;
+        new_input[pos] = write;
+        return new_input;
+    }
 
+    auto new_input = input;
+    new_input[pos] = write;
     return new_input;
 }
 
-const Transition* find_transition(char c, const std::string& state, const std::unordered_map<std::string, std::vector<Transition>>& transitions)
+std::optional<Transition> find_transition(const char& c, const std::string& state, const std::unordered_map<std::string, std::vector<Transition>>& transitions)
 {
-    for (const auto& [transition_state, state_transitions] : transitions)
+    const auto state_it = transitions.find(state);
+    if (state_it == transitions.end())
+        return std::nullopt;
+    for (const auto& transition : state_it->second)
     {
-        if (transition_state != state)
-            continue;
-
-        for (const auto& transition : state_transitions)
-        {
-            if (transition.read == c)
-                return &transition;
-        }
+        if (transition.read == c)
+            return transition;
     }
-
-    return nullptr;
+    return std::nullopt;
 }
 
-std::string print_end(const std::string &input, int pos, const std::string& state, const Machine& machine)
+std::string print_end(const std::string &input, const int& pos, const std::string& state, const Machine& machine)
 {
 	std::string text;
 
@@ -696,25 +646,34 @@ std::string print_end(const std::string &input, int pos, const std::string& stat
 	return text + "\n";
 }
 
+Configuration step(const Configuration& config, const Machine& machine)
+{
+    const char read = get_read(config.input, config.pos, machine.blank);
+	const auto transition = find_transition(read, config.state, machine.transitions);
+
+    if (!transition)
+        return config;
+
+    return Configuration
+	{
+        .input = change_input(config.input, config.pos, transition->write, machine),
+        .pos = change_pos(config.pos, transition->action),
+        .state = transition->to_state
+    };
+}
+
 std::string print_output(const std::string& input, const Machine& machine)
 {
-	int pos = 0;
-	std::string text;
-	std::string current_input = input;
-	std::string state = machine.initial;
-	
-	text += "\"" + input + "\"\n";
-	while(std::find(machine.finals.begin(), machine.finals.end(), state) == machine.finals.end())
-	{
-        text += print_input(current_input, pos, state, machine);
-        const char read = get_read(current_input, pos, machine.blank);
-        const Transition* transition = find_transition(read, state, machine.transitions);
-        if (transition == nullptr)
+    Configuration config{ .input = input, .pos = 0, .state = machine.initial};
+    std::string text = "\"" + input + "\"\n";
+    while (std::find(machine.finals.begin(), machine.finals.end(), config.state) == machine.finals.end())
+    {
+        text += print_input(config.input, config.pos, config.state, machine);
+        const auto next = step(config, machine);
+        if (next.state == config.state && next.pos == config.pos && next.input == config.input)
             break;
-        current_input = change_input(current_input, pos, check_write(get_read(current_input, pos, machine.blank), state, machine.transitions), machine);
-		pos = change_pos(pos, transition->action);
-        state = transition->to_state;
-	}
-	text += print_end(current_input, pos, state, machine);
-	return text;
+        config = next;
+    }
+    text += print_end(config.input, config.pos, config.state, machine);
+    return text;
 }

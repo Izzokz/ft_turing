@@ -21,11 +21,11 @@ int main(int ac, char **av)
 			{ cerr << ft_print_err(*error, nullptr) << endl; return 1; }
 		Machine machine = set_machine(j);
 		cout << print_machine_description(machine);
-		error = check_input(av[2], machine.alphabet);
+		error = check_input(av[2], machine.alphabet, machine.blank);
 		if(error)
 			{ cerr << *error << endl; return 1; }
 		cout << print_output(av[2], machine);
 	}
 	else
-		{ cerr << ft_print_err(INVALID_JSON_ERR, nullptr); return 1; }	
+		{ cerr << ft_print_err(INVALID_JSON_ERR, nullptr); return 1; }
 }
